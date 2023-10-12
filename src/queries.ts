@@ -26,6 +26,10 @@ export async function getTotalSupply(address: string | undefined, block?: string
                 LIMIT 1`;
 
             }
+            else{
+                console.log("Invalid Block")
+                return { error: "Invalid Block" };
+            }
 
         }
         else {
@@ -108,6 +112,10 @@ export async function getBalance(wallet: string | undefined, address?: string | 
                 WHERE rn = 1;
                 `;
 
+            }
+            else{
+                console.log("Invalid Block")
+                return { error: "Invalid Block" };
             }
 
         }
