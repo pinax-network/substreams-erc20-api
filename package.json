@@ -1,4 +1,7 @@
 {
+  "description": "ERC20 API powered by Substreams",
+  "version": "v0.0.1",
+  "repository": "https://github.com/pinax-network/substreams-erc20-api",
   "scripts": {
     "dev": "bun run --hot src/index.ts"
   },

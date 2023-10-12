@@ -12,9 +12,9 @@ export function banner()  {
     ╚══════╝╚═╝░░╚═╝░╚════╝░╚══════╝░╚════╝░  ╚═╝░░╚═╝╚═╝░░░░░╚═╝
 
 `
-    text += `   🚀 ${pkg.description} (v${pkg.version})
+    text += `   🚀 ${pkg.description} (${pkg.version})
 
-    Documentation: ${pkg.homepage}
+    Github: ${pkg.repository}
 
     HTTP GET
         /supply?address=<Contract address>&block=<Optional - Block number>
