@@ -1,2 +1,8 @@
-# substreams-erc20-api
-substreams-erc20-api
+```
+bun install
+bun run dev
+```
+
+```
+open http://localhost:3001
+```
