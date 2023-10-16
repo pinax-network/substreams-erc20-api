@@ -1,84 +1,68 @@
-
-import { ethers } from 'ethers'
-import { createClient } from '@clickhouse/client-web'
-import config from './config'
+import { ethers } from "ethers";
+import { createClient } from "@clickhouse/client-web";
+import config from "./config";
 
 const client = createClient({
-    database: config.DB_NAME,
-    host: config.DB_HOST,
-    application: "rest-api",
-    username: config.DB_USERNAME,
-    password: config.DB_PASSWORD,
-})
+    database: config.name,
+    host: config.dbHost,
+    username: config.username,
+    password: config.password,
+});
 
-
-export async function getTotalSupply(address: string | undefined, block?: string | undefined) {
+export async function getTotalSupply(
+    address: string | undefined,
+    block?: number | undefined
+) {
     if (ethers.isAddress(address)) {
-
         let sqlquery: string = "";
         if (block) {
-
-            if (Number.isInteger(parseInt(block))) {
-                sqlquery = `SELECT *
+            sqlquery = `SELECT *
                 FROM TotalSupply
-                WHERE address = '${address}' AND CAST(block AS INT) >= ${parseInt(block)}
+                WHERE address = '${address}' AND CAST(block AS INT) >= ${block}
                 ORDER BY block
                 LIMIT 1`;
-
-            }
-            else{
-                console.log("Invalid Block")
-                return { error: "Invalid Block" };
-            }
-
-        }
-        else {
+        } else {
             sqlquery = `SELECT * FROM TotalSupply WHERE address = '${address}' ORDER BY block DESC LIMIT 1`;
         }
         const resultSet = await client.query({
             query: sqlquery,
-            format: 'JSONEachRow',
-
-        })
-        const dataset = await resultSet.json()
-        if (Array.isArray(dataset) && dataset.length !== 0) return dataset
-        else return { error: "Contract data not available" }
-
-    }
-    else {
-        console.log("Invalid Address")
+            format: "JSONEachRow",
+        });
+        const dataset = await resultSet.json();
+        if (Array.isArray(dataset) && dataset.length !== 0) return dataset;
+        else return { error: "Contract data not available" };
+    } else {
+        console.log("Invalid Address");
         return { error: "Invalid Address" };
     }
 }
 
 export async function getContract(address: string | undefined) {
     if (ethers.isAddress(address)) {
-
         let sqlquery: string = `SELECT * FROM Contracts WHERE address = '${address}'`;
         const resultSet = await client.query({
             query: sqlquery,
-            format: 'JSONEachRow',
-        })
-        const dataset = await resultSet.json()
-        if (Array.isArray(dataset) && dataset.length !== 0) return dataset
-        else return { error: "Contract data not available" }
-    }
-    else {
-        console.log("Invalid Address")
+            format: "JSONEachRow",
+        });
+        const dataset = await resultSet.json();
+        if (Array.isArray(dataset) && dataset.length !== 0) return dataset;
+        else return { error: "Contract data not available" };
+    } else {
+        console.log("Invalid Address");
         return { error: "Invalid Address" };
     }
-
 }
 
-
-export async function getBalance(wallet: string | undefined, address?: string | undefined, block?: string | undefined) {
+export async function getBalance(
+    wallet: string | undefined,
+    address?: string | undefined,
+    block?: number | undefined
+) {
     if (ethers.isAddress(wallet)) {
-
         let sqlquery: string = "";
 
         //GET all balance of every contract for a wallet LATEST BLOCK
         if (!block && !address) {
-
             sqlquery = `WITH RankedBalances AS (
                     SELECT
                         contract,
@@ -91,37 +75,26 @@ export async function getBalance(wallet: string | undefined, address?: string | 
                 SELECT contract, balance, block_num
                 FROM RankedBalances
                 WHERE rn = 1`;
-
         }
 
         //GET all balance of every contract for a wallet at specific block
         else if (block && !address) {
-
-            if (Number.isInteger(parseInt(block))) {
-                sqlquery = `WITH RankedBalances AS (
+            sqlquery = `WITH RankedBalances AS (
                     SELECT
                         contract,
                         new_balance AS balance,
                         block_num,
                         ROW_NUMBER() OVER (PARTITION BY contract ORDER BY block_num) AS rn
                     FROM balance_changes
-                    WHERE owner = '${wallet}' AND CAST(block_num AS INT) >= ${parseInt(block)}
+                    WHERE owner = '${wallet}' AND CAST(block_num AS INT) >= ${block}
                 )
                 SELECT contract, balance, block_num
                 FROM RankedBalances
                 WHERE rn = 1;
                 `;
-
-            }
-            else{
-                console.log("Invalid Block")
-                return { error: "Invalid Block" };
-            }
-
         }
         //GET  balance of a specific contract for a wallet LATEST BLOCK
         else if (!block && address) {
-
             if (ethers.isAddress(address)) {
                 sqlquery = `SELECT contract,
                 new_balance AS balance,
@@ -131,45 +104,30 @@ export async function getBalance(wallet: string | undefined, address?: string | 
                 ORDER BY block_num DESC
                 LIMIT 1`;
 
-                console.log(sqlquery)
+                console.log(sqlquery);
             } else {
-                console.log("Invalid Address")
+                console.log("Invalid Address");
                 return { error: "Invalid Address" };
             }
-
-        }
-
-        else if (block && address) {
-
-            if (Number.isInteger(parseInt(block)) && ethers.isAddress(address)) {
-                sqlquery = `SELECT contract,
+        } else if (block && address) {
+            sqlquery = `SELECT contract,
                 new_balance AS balance,
                 block_num,
                 FROM balance_changes
-                WHERE owner = '${wallet}' AND contract = '${address}' AND CAST(block_num AS INT) >= ${parseInt(block)}
+                WHERE owner = '${wallet}' AND contract = '${address}' AND CAST(block_num AS INT) >= ${block}
                 ORDER BY block_num
                 LIMIT 1`;
-
-            } else {
-                console.log("Invalid block or address")
-                return { error: "Invalid block or address" };
-            }
         }
 
         const resultSet = await client.query({
             query: sqlquery,
-            format: 'JSONEachRow',
-
-        })
-        const dataset = await resultSet.json()
-        if (Array.isArray(dataset) && dataset.length !== 0) return dataset
-        else return { error: "Contract data not available" }
-    }
-
-    else {
-        console.log("Invalid Wallet")
+            format: "JSONEachRow",
+        });
+        const dataset = await resultSet.json();
+        if (Array.isArray(dataset) && dataset.length !== 0) return dataset;
+        else return { error: "Contract data not available" };
+    } else {
+        console.log("Invalid Wallet");
         return { error: "Invalid Wallet" };
     }
-
 }
-

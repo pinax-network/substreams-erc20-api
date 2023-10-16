@@ -1,62 +1,93 @@
-import { Hono } from 'hono'
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { TypedResponse } from 'hono';
+import { serveStatic } from 'hono/bun'
+import { logger } from 'hono/logger';
+import pkg from "../package.json";
+import * as routes from './routes';
+import {
+    type SupplyResponseSchema,
+    type SupplySchema, type ContractSchema, type ContractResponseSchema, type BalanceSchema, type BalanceResponseSchema
+} from './schemas';
 import { getTotalSupply, getContract, getBalance } from './queries';
 import config from './config'
 import { HTTPException } from 'hono/http-exception';
 
 import { banner } from "./banner";
 
-const app = new Hono()
+export function generateApp() {
 
-app.get('/', (c) => c.text(banner()));
+    const app = new OpenAPIHono();
 
-app.get('/supply', async (c) => {
-    let res = await getTotalSupply(c.req.query("address"), c.req.query("block"));
-    
-    if (res && (typeof res === 'object') && 'error' in res) {
-        throw new HTTPException(400, {
-            message: res.error
-        });
-    }
-    return c.json(res);
-})
+    if (config.NODE_ENV !== "production")
+        app.use('*', logger());
 
-app.get('/contract', async (c) => {
-    let res = await getContract(c.req.query("address"));
-    
-    if (res && (typeof res === 'object') && 'error' in res) {
-        throw new HTTPException(400, {
-            message: res.error
-        });
-    }
-    return c.json(res);
-})
+    app.use('/swagger/*', serveStatic({ root: './' }))
 
-app.get('/balance', async (c) => {
-    let res = await getBalance(c.req.query("wallet"), c.req.query("address"), c.req.query("block"));
-    
-    if (res && (typeof res === 'object') && 'error' in res) {
-        throw new HTTPException(400, {
-            message: res.error
-        });
-    }
-    return c.json(res);
-})
+    app.doc('/openapi', {
+        openapi: '3.0.0',
+        info: {
+            version: pkg.version,
+            title: 'ERC20 API',
+        },
+    });
 
-app.onError((err, c) => {
-    let error_message = `${err}`;
-    let error_code = 500;
+    app.onError((err, c) => {
+        let error_message = `${err}`;
+        let error_code = 500;
 
-  
-    if (err instanceof HTTPException){
-        error_message = err.message;
-        error_code = err.status;
-    }
-    console.log(error_message)
-    return c.json({ message: error_message }, error_code);
-});
+        if (err instanceof HTTPException) {
+            error_message = err.message;
+            error_code = err.status;
+        }
 
-export default {
-    port: config.PORT,
-    fetch: app.fetch,
-    app: app
+        return c.json({ error_message }, error_code);
+    });
+
+
+    app.openapi(routes.indexRoute, (c) => {
+        return {
+            response: c.text(banner())
+        } as TypedResponse<string>;
+    });
+
+
+    app.openapi(routes.TotalSupplyQueryRoute, async (c) => {
+        // @ts-expect-error: Suppress type of parameter expected to be never (see https://github.com/honojs/middleware/issues/200)
+        const { address, block } = c.req.valid('query') as SupplySchema;
+        return {
+            response: c.json(await getTotalSupply(address, block))
+        } as TypedResponse<SupplyResponseSchema>;
+    });
+
+
+
+
+
+    app.openapi(routes.ContractQueryRoute, async (c) => {
+        const { address } = c.req.valid('query') as ContractSchema;
+        return {
+            response: c.json(await getContract(address))
+        } as TypedResponse<ContractResponseSchema>;
+    });
+
+
+    app.openapi(routes.BalanceQueryRoute, async (c) => {
+        // @ts-expect-error: Suppress type of parameter expected to be never (see https://github.com/honojs/middleware/issues/200)
+        const { wallet, address, block } = c.req.valid('query') as BalanceSchema;
+        return {
+            response: c.json(await getBalance(wallet, address, block))
+        } as TypedResponse<BalanceResponseSchema>;
+    });
+
+
+    return app;
 }
+
+Bun.serve({
+    port: config.port,
+    hostname: config.hostname,
+    fetch: generateApp().fetch
+}
+)
+
+console.log("Server listening on http://" + config.hostname + ":" + config.port + "/")
