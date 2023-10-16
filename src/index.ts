@@ -53,10 +53,23 @@ export function generateApp() {
 
     app.openapi(routes.TotalSupplyQueryRoute, async (c) => {
         // @ts-expect-error: Suppress type of parameter expected to be never (see https://github.com/honojs/middleware/issues/200)
-        const { address, block } = c.req.valid('query') as SupplySchema;
-        return {
-            response: c.json(await getTotalSupply(address, block))
-        } as TypedResponse<SupplyResponseSchema>;
+        const { address, block, contract } = c.req.valid('query') as SupplySchema;
+
+        console.log(contract);
+        if (contract) {
+            let supply = await getTotalSupply(address, block);
+            let contract_info = await getContract(address);
+            let result = Object.assign({}, supply, contract_info)
+            return {
+                response: c.json(result)
+            } as TypedResponse<SupplyResponseSchema>;
+        }
+        else {
+            return {
+                response: c.json(await getTotalSupply(address, block))
+            } as TypedResponse<SupplyResponseSchema>;
+        }
+
     });
 
 

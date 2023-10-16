@@ -1,6 +1,46 @@
 import { z } from '@hono/zod-openapi';
 import { ethers } from 'ethers'
 
+
+export const ContractSchema = z.object({
+    address: z.string().refine((val) => ethers.isAddress(val))
+        .openapi({
+            param: {
+                name: 'address',
+                in: 'query',
+            },
+            example: 'dAC17F958D2ee523a2206206994597C13D831ec7',
+        })
+});
+export type ContractSchema = z.infer<typeof ContractSchema>;
+
+export const ContractResponseSchema = z.object({
+    address: z.string()
+        .openapi({
+            example: 'dAC17F958D2ee523a2206206994597C13D831ec7',
+        })
+    ,
+    name: z.string()
+        .openapi({
+            example: 'Tether USD',
+        })
+    ,
+    symbol: z.string()
+        .openapi({
+            example: 'USDT',
+        })
+    ,
+
+    decimals: z.string().or(z.number())
+        .openapi({
+            example: '6',
+        })
+    ,
+});
+export type ContractResponseSchema = z.infer<typeof ContractResponseSchema>;
+
+
+
 export const SupplySchema = z.object({
     address: z.string().refine((val) => ethers.isAddress(val))
         .openapi({
@@ -8,7 +48,7 @@ export const SupplySchema = z.object({
                 name: 'address',
                 in: 'query',
             },
-            example: 'a04bf47f0e9d1745d254b9b89f304c7d7ad121aa',
+            example: 'dAC17F958D2ee523a2206206994597C13D831ec7',
         })
     ,
     block: z.coerce.number().optional().openapi({
@@ -17,6 +57,14 @@ export const SupplySchema = z.object({
             in: 'query',
         },
         example: 1000000,
+    }),
+
+    contract: z.enum(["true", "false"]).transform((value) => value === "true").optional().openapi({
+        param: {
+            name: 'contract',
+            in: 'query',
+        },
+        example: true,
     })
 });
 export type SupplySchema = z.infer<typeof SupplySchema>;
@@ -24,7 +72,7 @@ export type SupplySchema = z.infer<typeof SupplySchema>;
 export const SupplyResponseSchema = z.object({
     address: z.string()
         .openapi({
-            example: 'a04bf47f0e9d1745d254b9b89f304c7d7ad121aa',
+            example: 'dAC17F958D2ee523a2206206994597C13D831ec7',
         })
     ,
     supply: z.string().or(z.number())
@@ -41,46 +89,10 @@ export const SupplyResponseSchema = z.object({
             example: '1697483144',
         })
     ,
+    contract: ContractResponseSchema.optional()
 });
 export type SupplyResponseSchema = z.infer<typeof SupplyResponseSchema>;
 
-
-export const ContractSchema = z.object({
-    address: z.string().refine((val) => ethers.isAddress(val))
-        .openapi({
-            param: {
-                name: 'address',
-                in: 'query',
-            },
-            example: 'cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0',
-        })
-});
-export type ContractSchema = z.infer<typeof ContractSchema>;
-
-export const ContractResponseSchema = z.object({
-    address: z.string()
-        .openapi({
-            example: 'cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0',
-        })
-    ,
-    name: z.string()
-        .openapi({
-            example: 'Tether USD',
-        })
-    ,
-    symbol: z.string()
-        .openapi({
-            example: 'USDT',
-        })
-    ,
-
-    decimals: z.string().or(z.number())
-        .openapi({
-            example: '18',
-        })
-    ,
-});
-export type ContractResponseSchema = z.infer<typeof ContractResponseSchema>;
 
 
 export const BalanceSchema = z.object({
