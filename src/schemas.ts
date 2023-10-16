@@ -8,7 +8,7 @@ export const SupplySchema = z.object({
                 name: 'address',
                 in: 'query',
             },
-            example: 'cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0',
+            example: 'a04bf47f0e9d1745d254b9b89f304c7d7ad121aa',
         })
     ,
     block: z.coerce.number().optional().openapi({
@@ -24,7 +24,7 @@ export type SupplySchema = z.infer<typeof SupplySchema>;
 export const SupplyResponseSchema = z.object({
     address: z.string()
         .openapi({
-            example: 'cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0',
+            example: 'a04bf47f0e9d1745d254b9b89f304c7d7ad121aa',
         })
     ,
     supply: z.string().or(z.number())
@@ -90,7 +90,7 @@ export const BalanceSchema = z.object({
             name: 'wallet',
             in: 'query',
         },
-        example: 'cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0',
+        example: 'a46fcc88d1e03f79e264ec48bcf05094401a6962',
     }),
 
     address: z.string().refine((val) => ethers.isAddress(val)).optional()
@@ -99,7 +99,7 @@ export const BalanceSchema = z.object({
                 name: 'address',
                 in: 'query',
             },
-            example: 'cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0',
+            example: 'd445d1c4b6d2f048b566ce6c079d20512985854e',
         })
     ,
     block: z.coerce.number().optional().openapi({
@@ -115,16 +115,16 @@ export type BalanceSchema = z.infer<typeof BalanceSchema>;
 export const BalanceResponseSchema = z.object({
     contract: z.string()
         .openapi({
-            example: 'cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0',
+            example: 'd445d1c4b6d2f048b566ce6c079d20512985854e',
         })
     ,
     balance: z.string().or(z.number())
         .openapi({
-            example: '10000000',
+            example: '888',
         })
     ,
     block: z.number().or(z.string()).openapi({
-        example: 1000000,
+        example: 1009707,
     }),
 
 });
