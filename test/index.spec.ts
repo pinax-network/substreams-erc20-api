@@ -25,7 +25,7 @@ describe('Supply page (/supply)', () => {
 
         const json = await res.json() as { message: string };
 
-        console.log(res.status, json.message)
+        console.log(res, json.message)
         expect(res.status === 200 || json.message === "Contract data not available").toBe(true);
     });
 
