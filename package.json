@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "lint": "bun run tsc --noEmit --skipLibCheck --pretty",
-    "test": "bun test src/tests/*.spec.ts --coverage",
+    "test": "bun test test/*.spec.ts --coverage",
     "build": "bun build --compile ./src/index.ts --outfile substreams-erc20-api"
   },
   "license": "MIT",

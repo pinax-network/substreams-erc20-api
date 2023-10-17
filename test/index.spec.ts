@@ -75,7 +75,7 @@ describe('Balance page (/balance)', () => {
 
     it('Should return 200 Response for valid address', async () => {
 
-        const validWallet = "0x39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
+        const validWallet = "39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
         const res = await app.request('/balance?wallet=' + validWallet);
         const json = await res.json() as { message: string };
         expect(res.status === 200 || json.message === "Contract data not available").toBe(true);
@@ -83,7 +83,7 @@ describe('Balance page (/balance)', () => {
 
     it('Should return 200 Response for valid wallet and block', async () => {
 
-        const validWallet = "0x39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
+        const validWallet = "39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
         const res = await app.request('/balance?wallet=' + validWallet + '&block=1000000');
         const json = await res.json() as { message: string };
         expect(res.status === 200 || json.message === "Contract data not available").toBe(true);
@@ -93,15 +93,15 @@ describe('Balance page (/balance)', () => {
 
     it('Should return 200 Response for valid wallet and valid address', async () => {
 
-        const validWallet = "0x39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
-        const res = await app.request('/balance?wallet=' + validWallet + '&address=0xc083e9947Cf02b8FfC7D3090AE9AEA72DF98FD47');
+        const validWallet = "39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
+        const res = await app.request('/balance?wallet=' + validWallet + '&address=c083e9947Cf02b8FfC7D3090AE9AEA72DF98FD47');
         const json = await res.json() as { message: string };
         expect(res.status === 200 || json.message === "Contract data not available").toBe(true);
     });
 
     it('Should return 400 Response for valid wallet and invalid address', async () => {
 
-        const validWallet = "0x39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
+        const validWallet = "39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
         const res = await app.request('/balance?address=' + validWallet + '&address=3rrw3r');
         expect(res.status).toBe(400);
     });
@@ -115,7 +115,7 @@ describe('Balance page (/balance)', () => {
 
     it('Should return 400 Response for valid wallet but invalid block', async () => {
 
-        const validWallet = "0x39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
+        const validWallet = "39fA8c5f2793459D6622857E7D9FbB4BD91766d3"
         const res = await app.request('/balance?wallet=' + validWallet + '&block=awdawd');
         expect(res.status).toBe(400);
     });

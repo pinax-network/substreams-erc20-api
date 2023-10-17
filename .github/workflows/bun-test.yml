@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  push:
+    branches: [develop*]
+  pull_request:
+    branches: [develop*, main]
+
+jobs:
+  bun-test:
+    runs-on: ubuntu-latest
+    environment: dev-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: "Install Dependencies"
+        run: |
+          bun install
+
+      - name: "Setup local Clickhouse DB"
+        uses: metrico/clickhouse-server-action@v1.0.0
+
+      - name: "Insert mock data into Clickhouse DB for testing"
+        run: |
+          curl https://clickhouse.com/ | sh
+          echo "CREATE TABLE IF NOT EXISTS TotalSupply (address FixedString(40), supply Nullable(String), block Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE IF NOT EXISTS Contracts (address FixedString(40), name Nullable(String), symbol Nullable(String), decimals Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE IF NOT EXISTS balance_changes (contract FixedString(40), owner Nullable(String), old_balance Nullable(String), new_balance Nullable(String), transaction_id Nullable(String), block_num Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (contract);  INSERT INTO TotalSupply (*) VALUES ('cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0', '100000, '1004162', '1459426268');INSERT INTO Contracts (*) VALUES ('cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0', 'wing, '$wing', '8');INSERT INTO balance_changes (*) VALUES ('c083e9947Cf02b8FfC7D3090AE9AEA72DF98FD47', '39fA8c5f2793459D6622857E7D9FbB4BD91766d3, '123123', '3423443','ab3612eed62a184eed2ae86bcad766183019cf40f82e5316f4d7c4e61f4baa44','1023232','1655779280')" > setup.sql
+          ./clickhouse client --queries-file ./setup.sql
+
+      - name: "Run test"
+        run: |
+          bun test
+        env:
+          HOSTNAME: ${{ vars.HOSTNAME }}
+          PORT: ${{ vars.PORT }}
+          DB_HOST: ${{ vars.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.USERNAME }}
+          DB_PASSWORD: ""
