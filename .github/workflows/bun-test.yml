@@ -42,9 +42,9 @@ jobs:
         run: |
           bun test
         env:
-          HOSTNAME: ${{ vars.HOST}}
+          HOSTNAME: ${{ vars.HOSTNAME}}
           PORT: ${{ vars.PORT }}
           DB_HOST: ${{ vars.DB_HOST }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ""
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
