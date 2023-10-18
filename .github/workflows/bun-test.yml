@@ -42,9 +42,9 @@ jobs:
         run: |
           bun test
         env:
-          HOSTNAME: "localhost"
-          PORT: "8080"
-          DB_HOST: "http://localhost:8123"
-          DB_NAME: "clickhouse_sink"
-          DB_USERNAME: "default"
+          HOSTNAME: ${{ vars.HOSTNAME }}
+          PORT: ${{ vars.PORT }}
+          DB_HOST: ${{ vars.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ""
