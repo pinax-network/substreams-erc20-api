@@ -27,7 +27,6 @@ jobs:
       - name: "Insert mock data into Clickhouse DB for testing"
         run: |
           curl https://clickhouse.com/ | sh
-          sudo ./clickhouse install
           echo "CREATE DATABASE clickhouse_sink" > create.sql
           ./clickhouse client --queries-file ./create.sql
           echo "USE clickhouse_sink; CREATE TABLE TotalSupply (address FixedString(40), supply Nullable(String), block Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE Contracts (address FixedString(40), name Nullable(String), symbol Nullable(String), decimals Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE balance_changes (contract FixedString(40), owner Nullable(String), old_balance Nullable(String), new_balance Nullable(String), transaction_id Nullable(String), block_num Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (contract);" > setup.sql
