@@ -84,19 +84,22 @@ Options:
   -h, --help                       display help for command
 ```
 
-## Docker environment (SOON)
+## Docker environment
 
-<!-- Pull from GitHub Container registry
+Pull from GitHub Container registry
+
 ```bash
-docker pull ghcr.io/pinax-network/substreams-sink-websockets:latest
+docker pull ghcr.io/pinax-network/substreams-erc20-api:latest
 ```
 
 Build from source
+
 ```bash
-docker build -t substreams-sink-websockets .
+docker build -t substreams-erc20-api .
 ```
 
 Run with `.env` file
+
 ```bash
-docker run -it --rm --env-file .env ghcr.io/pinax-network/substreams-sink-websockets
-``` -->
+docker run -it --rm --env-file .env ghcr.io/pinax-network/substreams-erc20-api
+```
