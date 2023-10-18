@@ -28,13 +28,15 @@ jobs:
         run: |
           curl https://clickhouse.com/ | sh
           sudo ./clickhouse install
-          echo "CREATE TABLE TotalSupply (address FixedString(40), supply Nullable(String), block Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE Contracts (address FixedString(40), name Nullable(String), symbol Nullable(String), decimals Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE balance_changes (contract FixedString(40), owner Nullable(String), old_balance Nullable(String), new_balance Nullable(String), transaction_id Nullable(String), block_num Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (contract);" > setup.sql
+          echo "CREATE DATABASE clickhouse_sink" > create.sql
+          ./clickhouse client --queries-file ./create.sql
+          echo "USE clickhouse_sink; CREATE TABLE TotalSupply (address FixedString(40), supply Nullable(String), block Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE Contracts (address FixedString(40), name Nullable(String), symbol Nullable(String), decimals Nullable(String)) ENGINE = MergeTree() ORDER BY (address); CREATE TABLE balance_changes (contract FixedString(40), owner Nullable(String), old_balance Nullable(String), new_balance Nullable(String), transaction_id Nullable(String), block_num Nullable(String), timestamp Nullable(String)) ENGINE = MergeTree() ORDER BY (contract);" > setup.sql
           ./clickhouse client --queries-file ./setup.sql
-          echo "INSERT INTO TotalSupply (address, supply, block, timestamp) VALUES ('cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0', '100000', '1004162', '1459426268');" > insert1.sql
+          echo "INSERT INTO clickhouse_sink.TotalSupply (address, supply, block, timestamp) VALUES ('cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0', '100000', '1004162', '1459426268');" > insert1.sql
           ./clickhouse client --queries-file ./insert1.sql
-          echo "INSERT INTO Contracts (address, name, symbol, decimals) VALUES ('cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0', 'wing', '$wing', '8');" > insert2.sql
+          echo "INSERT INTO clickhouse_sink.Contracts (address, name, symbol, decimals) VALUES ('cb9df5dc2ed5d7d3972f601acfe35cdbe57341e0', 'wing', '$wing', '8');" > insert2.sql
           ./clickhouse client --queries-file ./insert2.sql
-          echo "INSERT INTO balance_changes (contract, owner, old_balance, new_balance, transaction_id, block_num, timestamp) VALUES ('c083e9947Cf02b8FfC7D3090AE9AEA72DF98FD47', '39fA8c5f2793459D6622857E7D9FbB4BD91766d3', '123123', '3423443', 'ab3612eed62a184eed2ae86bcad766183019cf40f82e5316f4d7c4e61f4baa44', '1023232', '1655779280');" > insert3.sql
+          echo "INSERT INTO clickhouse_sink.balance_changes (contract, owner, old_balance, new_balance, transaction_id, block_num, timestamp) VALUES ('c083e9947Cf02b8FfC7D3090AE9AEA72DF98FD47', '39fA8c5f2793459D6622857E7D9FbB4BD91766d3', '123123', '3423443', 'ab3612eed62a184eed2ae86bcad766183019cf40f82e5316f4d7c4e61f4baa44', '1023232', '1655779280');" > insert3.sql
           ./clickhouse client --queries-file ./insert3.sql
       - name: "Run test"
         run: |
@@ -43,6 +45,6 @@ jobs:
           HOSTNAME: "localhost"
           PORT: "8080"
           DB_HOST: "http://localhost:8123"
-          DB_NAME: "demo"
+          DB_NAME: "clickhouse_sink"
           DB_USERNAME: "default"
           DB_PASSWORD: ""
