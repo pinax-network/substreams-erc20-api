@@ -27,13 +27,14 @@ export async function getTotalSupply(
         if (ethers.isAddress(address)) {
             let sqlquery: string = "";
             if (block) {
-                sqlquery = `SELECT *
+                sqlquery = `SELECT address,supply, block_number AS block,chain
                     FROM TotalSupply
-                    WHERE address = '${address}' AND CAST(block AS INT) >= ${block}
-                    ORDER BY block
+                    JOIN block ON block.block_id = TotalSupply.block_id
+                    WHERE address = '${address}' AND block_number >= ${block}
+                    ORDER BY block_number
                     LIMIT 1`;
             } else {
-                sqlquery = `SELECT * FROM TotalSupply WHERE address = '${address}' ORDER BY block DESC LIMIT 1`;
+                sqlquery = `SELECT address,supply, chain FROM TotalSupply  JOIN block ON block.block_id = TotalSupply.block_id WHERE address = '${address}' ORDER BY block_number DESC LIMIT 1`;
             }
             const resultSet = await client.query({
                 query: sqlquery,
@@ -54,7 +55,7 @@ export async function getContract(address: string | undefined) {
     if (address) {
         address = formatAddress(address);
         if (ethers.isAddress(address)) {
-            let sqlquery: string = `SELECT * FROM Contracts WHERE address = '${address}'`;
+            let sqlquery: string = `SELECT address,name,symbol,decimals,chain FROM Contracts WHERE address = '${address}'`;
             const resultSet = await client.query({
                 query: sqlquery,
                 format: "JSONEachRow",
@@ -87,12 +88,13 @@ export async function getBalance(
                         SELECT
                             contract,
                             new_balance AS balance,
-                            block_num,
-                            ROW_NUMBER() OVER (PARTITION BY contract ORDER BY block_num DESC) AS rn
+                            chain,
+                            ROW_NUMBER() OVER (PARTITION BY contract ORDER BY block_number DESC) AS rn
                         FROM balance_changes
+                        JOIN block ON block.block_id = balance_changes.block_id
                         WHERE owner = '${wallet}'
                     )
-                    SELECT contract, balance, block_num
+                    SELECT contract, balance,chain
                     FROM RankedBalances
                     WHERE rn = 1`;
             }
@@ -103,12 +105,14 @@ export async function getBalance(
                         SELECT
                             contract,
                             new_balance AS balance,
-                            block_num,
-                            ROW_NUMBER() OVER (PARTITION BY contract ORDER BY block_num) AS rn
+                            block_number,
+                            chain,
+                            ROW_NUMBER() OVER (PARTITION BY contract ORDER BY block_number) AS rn
                         FROM balance_changes
-                        WHERE owner = '${wallet}' AND CAST(block_num AS INT) >= ${block}
+                        JOIN block ON block.block_id = balance_changes.block_id
+                        WHERE owner = '${wallet}' AND block_number >= ${block}
                     )
-                    SELECT contract, balance, block_num
+                    SELECT contract, balance, block_number,chain
                     FROM RankedBalances
                     WHERE rn = 1;
                     `;
@@ -116,12 +120,11 @@ export async function getBalance(
             //GET  balance of a specific contract for a wallet LATEST BLOCK
             else if (!block && address) {
                 if (ethers.isAddress(address)) {
-                    sqlquery = `SELECT contract,
-                    new_balance AS balance,
-                    block_num,
+                    sqlquery = `SELECT contract, new_balance AS balance,chain 
                     FROM balance_changes
+                    JOIN block ON block.block_id = balance_changes.block_id
                     WHERE owner = '${wallet}' AND contract = '${address}'
-                    ORDER BY block_num DESC
+                    ORDER BY block_number DESC
                     LIMIT 1`;
 
                     console.log(sqlquery);
@@ -132,10 +135,12 @@ export async function getBalance(
             } else if (block && address) {
                 sqlquery = `SELECT contract,
                     new_balance AS balance,
-                    block_num,
+                    block_number AS block,
+                    chain
                     FROM balance_changes
-                    WHERE owner = '${wallet}' AND contract = '${address}' AND CAST(block_num AS INT) >= ${block}
-                    ORDER BY block_num
+                    JOIN block ON block.block_id = balance_changes.block_id
+                    WHERE owner = '${wallet}' AND contract = '${address}' AND block_number >= ${block}
+                    ORDER BY block_number
                     LIMIT 1`;
             }
 

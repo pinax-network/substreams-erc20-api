@@ -7,7 +7,7 @@ import pkg from "../package.json";
 export const DEFAULT_PORT = "8080";
 export const DEFAULT_HOSTNAME = "localhost";
 export const DEFAULT_DB_HOST = "http://localhost:8123";
-export const DEFAULT_DB_NAME = "clickhouse_sink";
+export const DEFAULT_DB_NAME = "default";
 export const DEFAULT_DB_USERNAME = "default";
 export const DEFAULT_DB_PASSWORD = "";
 export const DEFAULT_MAX_ELEMENTS_QUERIES = 10;

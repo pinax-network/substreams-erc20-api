@@ -36,6 +36,9 @@ export const ContractResponseSchema = z.object({
             example: '6',
         })
     ,
+    chain: z.string().openapi({
+        example: 'eth',
+    })
 });
 export type ContractResponseSchema = z.infer<typeof ContractResponseSchema>;
 
@@ -84,9 +87,9 @@ export const SupplyResponseSchema = z.object({
         example: 1000000,
     }),
 
-    timestamp: z.string().or(z.number())
+    chain: z.string()
         .openapi({
-            example: '1697483144',
+            example: 'eth',
         })
     ,
     contract: ContractResponseSchema.optional()
@@ -138,6 +141,11 @@ export const BalanceResponseSchema = z.object({
     block: z.number().or(z.string()).openapi({
         example: 1009707,
     }),
+    chain: z.string()
+        .openapi({
+            example: 'eth',
+        })
+    ,
 
 });
 export type BalanceResponseSchema = z.infer<typeof BalanceResponseSchema>;
