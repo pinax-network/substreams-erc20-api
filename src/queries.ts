@@ -10,7 +10,7 @@ const client = createClient({
 });
 
 function formatAddress(address: string) {
-    if (address.startsWith('0x')) {
+    if (address.startsWith("0x")) {
         // Remove the "0x" prefix and return the address
         return address.slice(2);
     }
@@ -48,7 +48,6 @@ export async function getTotalSupply(
             return { error: "Invalid Address" };
         }
     }
-
 }
 
 export async function getContract(address: string | undefined) {
@@ -68,7 +67,6 @@ export async function getContract(address: string | undefined) {
             return { error: "Invalid Address" };
         }
     }
-
 }
 
 export async function getBalance(
@@ -156,5 +154,4 @@ export async function getBalance(
             return { error: "Invalid Wallet" };
         }
     }
-
 }

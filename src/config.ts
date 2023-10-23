@@ -11,7 +11,7 @@ export const DEFAULT_DB_NAME = "clickhouse_sink";
 export const DEFAULT_DB_USERNAME = "default";
 export const DEFAULT_DB_PASSWORD = "";
 export const DEFAULT_MAX_ELEMENTS_QUERIES = 10;
-export const DEFAULT_VERBOSE = false;
+export const DEFAULT_VERBOSE = true;
 
 const CommanderSchema = z.object({
   NODE_ENV: z.string().optional(),
@@ -23,7 +23,8 @@ const CommanderSchema = z.object({
   password: z.string().default(DEFAULT_DB_PASSWORD),
   maxElementsQueried: z.coerce.number().default(DEFAULT_MAX_ELEMENTS_QUERIES).describe(
     'Maximum number of query elements when using arrays as parameters'
-  )
+  ),
+  verbose: z.boolean().default(DEFAULT_VERBOSE),
 });
 
 export function decode(data: unknown) {
