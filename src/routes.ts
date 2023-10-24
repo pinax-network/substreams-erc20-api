@@ -1,15 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
 import * as schemas from "./schemas";
 
-export const indexRoute = createRoute({
-    method: "get",
-    path: "/",
-    responses: {
-        200: {
-            description: "Index page banner.",
-        },
-    },
-});
+
 
 export const TotalSupplyQueryRoute = createRoute({
     method: "get",

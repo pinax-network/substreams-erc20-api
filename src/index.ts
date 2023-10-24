@@ -16,12 +16,11 @@ import { getTotalSupply, getContract, getBalance } from "./queries";
 import config from "./config";
 import { HTTPException } from "hono/http-exception";
 
-import { banner } from "./banner";
 
 export function generateApp() {
     const app = new OpenAPIHono();
 
-    app.use("/swagger/*", serveStatic({ root: "./" }));
+    app.use("/", serveStatic({ root: "./swagger" }));
 
     app.doc("/openapi", {
         openapi: "3.0.0",
@@ -44,11 +43,7 @@ export function generateApp() {
         return c.json({ error_message }, error_code);
     });
 
-    app.openapi(routes.indexRoute, (c) => {
-        return {
-            response: c.text(banner()),
-        } as TypedResponse<string>;
-    });
+
 
     app.openapi(routes.TotalSupplyQueryRoute, async (c) => {
         // @ts-expect-error: Suppress type of parameter expected to be never (see https://github.com/honojs/middleware/issues/200)
