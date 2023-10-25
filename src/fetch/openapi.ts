@@ -89,7 +89,7 @@ export default new OpenApiBuilder()
   .addPath("/supply", {
     get: {
       tags: [TAGS.USAGE],
-      summary: "Get the total supply of an ERC20 contract",
+      summary: "ERC20 total supply",
       parameters: [
         parameterChain,
         parameterString("address"),
@@ -104,7 +104,7 @@ export default new OpenApiBuilder()
   .addPath("/contract", {
     get: {
       tags: [TAGS.USAGE],
-      summary: "Get the ERC20 contract information",
+      summary: "ERC20 contract information",
       parameters: [
         parameterChain,
         parameterString("address"),
@@ -121,7 +121,7 @@ export default new OpenApiBuilder()
   .addPath("/balance", {
     get: {
       tags: [TAGS.USAGE],
-      summary: "Get the ERC20 balance changes",
+      summary: "ERC20 balance changes",
       parameters: [
         parameterChain,
         parameterString("owner"),
