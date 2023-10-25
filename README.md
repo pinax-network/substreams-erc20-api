@@ -1,39 +1,26 @@
-```
-bun install
-bun run dev
-```
-
-```
-open http://localhost:8080
-```
-
-    ███████╗██████╗░░█████╗░██████╗░░█████╗░  ░█████╗░██████╗░██╗
-    ██╔════╝██╔══██╗██╔══██╗╚════██╗██╔══██╗  ██╔══██╗██╔══██╗██║
-    █████╗░░██████╔╝██║░░╚═╝░░███╔═╝██║░░██║  ███████║██████╔╝██║
-    ██╔══╝░░██╔══██╗██║░░██╗██╔══╝░░██║░░██║  ██╔══██║██╔═══╝░██║
-    ███████╗██║░░██║╚█████╔╝███████╗╚█████╔╝  ██║░░██║██║░░░░░██║
-    ╚══════╝╚═╝░░╚═╝░╚════╝░╚══════╝░╚════╝░  ╚═╝░░╚═╝╚═╝░░░░░╚═╝
-
 # [`Substreams`](https://substreams.streamingfast.io/) ERC20 API
+
+[![.github/workflows/bun-test.yml](https://github.com/pinax-network/substreams-erc20-api/actions/workflows/bun-test.yml/badge.svg)](https://github.com/pinax-network/substreams-erc20-api/actions/workflows/bun-test.yml)
+
+> ERC-20 Balance, Supply, Contract API
 
 ## REST API
 
-| Pathname                                                                                        | Description                                             |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| GET `/`                                                                                         | Banner                                                  |
-| GET `/supply?address=<contract address>&block=<Optional Block Number>`                          | Returns the total supply of a contract                  |
-| GET `/contract?address=<contract address>`                                                      | Returns Contract information (name,symbol,decimals)     |
-| GET `/balance?wallet?<wallet address>&address=<contract address>&block=<Optional Block Number>` | Returns the wallet balance                              |
-| GET `/openapi`                                                                                  | [OpenAPI v3 JSON](https://spec.openapis.org/oas/v3.0.0) |
-| GET `/swagger`                                                                                  | [Swagger UI](https://swagger.io/resources/open-api/)    |
+| Pathname              | Description                                             |
+| ----------------------|-------------------------------------------------------- |
+| GET `/`               | [Swagger UI](https://swagger.io/resources/open-api/)
+| GET `/chains`         | Available `chains`
+| GET `/supply`         | ERC20 total supply
+| GET `/contract`       | ERC20 contract information (name,symbol,decimals)
+| GET `/balance`        | ERC20 balance changes
+| GET `/health`         | Health check
+| GET `/metrics`        | Prometheus metrics
+| GET `/openapi`        | [OpenAPI v3 JSON](https://spec.openapis.org/oas/v3.0.0)
 
 ## Requirements
 
-- [Clickhouse](clickhouse.com/)
-
-Additionnaly to pull data directly from a substream:
-
-- [Substreams Sink Clickhouse](https://github.com/pinax-network/substreams-sink-clickhouse/)
+- [ClickHouse](clickhouse.com/)
+- [Substreams Sink ClickHouse](https://github.com/pinax-network/substreams-sink-clickhouse/)
 
 ## Quickstart
 
@@ -54,13 +41,19 @@ $ chmod +x ./substreams-erc20-api
 ## `.env` Environment variables
 
 ```env
-# Optional
+# API Server
 PORT=8080
 HOSTNAME=localhost
-DB_HOST=http://localhost:8123
-DB_NAME=demo
-DB_USERNAME=default
-DB_PASSWORD=
+
+# Clickhouse Database
+HOST=http://127.0.0.1:8123
+DATABASE=default
+USERNAME=default
+PASSWORD=
+MAX_LIMIT=500
+
+# Logging
+VERBOSE=true
 ```
 
 ## Help
@@ -69,19 +62,19 @@ DB_PASSWORD=
 $ ./substreams-erc20-api --help
 Usage: substreams-erc20-api [options]
 
-Timestamps <> Block numbers conversion for your favorite chains
+ERC20 API powered by Substreams
 
 Options:
-  --port <int>                     Server listen on HTTP port (default: "8080", env: PORT)
-  --hostname <string>              Server listen on HTTP hostname (default: "localhost", env: HOST)
-  --db-host <string>               Clickhouse DB HTTP hostname (default: "http://localhost:8123", env: dbHost)
-  --name <string>                  Clickhouse DB table name (default: "demo", env: DB_NAME)
-  --username <string>              Clickhouse DB username (default: "default", env: DB_USERNAME)
-  --password <string>              Clickhouse DB password (default: "", env: DB_PASSWORD)
-  --max-elements-queried <string>  Maximum number of query elements when using arrays as parameters (default: 10, env: MAX_ELEMENTS_QUERIED)
-  --verbose <boolean>              Enable verbose logging (default: false, env: VERBOSE)
-  -V, --version                    output the version number
-  -h, --help                       display help for command
+  -V, --version            output the version number
+  -p, --port <number>      HTTP port on which to attach the API (default: "8080", env: PORT)
+  -v, --verbose <boolean>  Enable verbose logging (choices: "true", "false", default: false, env: VERBOSE)
+  --hostname <string>      Server listen on HTTP hostname (default: "localhost", env: HOSTNAME)
+  --host <string>          Database HTTP hostname (default: "http://localhost:8123", env: HOST)
+  --username <string>      Database user (default: "default", env: USERNAME)
+  --password <string>      Password associated with the specified username (default: "", env: PASSWORD)
+  --database <string>      The database to use inside ClickHouse (default: "default", env: DATABASE)
+  --max-limit <number>     Maximum LIMIT queries (default: 10000, env: MAX_LIMIT)
+  -h, --help               display help for command
 ```
 
 ## Docker environment

@@ -2,7 +2,9 @@
   "description": "ERC20 API powered by Substreams",
   "version": "v0.0.1",
   "name": "substreams-erc20-api",
-  "repository": "https://github.com/pinax-network/substreams-erc20-api",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/pinax-network/substreams-erc20-api",
   "authors": [
     {
       "name": "Mathieu Lefebvre",
@@ -16,25 +18,24 @@
     }
   ],
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "lint": "bun run tsc --noEmit --skipLibCheck --pretty",
-    "test": "bun test test/*.spec.ts --coverage",
-    "build": "bun build --compile ./src/index.ts --outfile substreams-erc20-api"
+    "start": "bun index.ts",
+    "dev": "bun --watch index.ts",
+    "pretest": "bunx tsc --noEmit",
+    "test": "bun test",
+    "build": "bun build --compile ./index.ts --outfile substreams-erc20-api"
   },
-  "license": "MIT",
   "dependencies": {
-    "@clickhouse/client-web": "^0.2.2",
-    "@hono/zod-openapi": "^0.7.2",
-    "@sinclair/typebox": "^0.31.17",
-    "commander": "^11.1.0",
-    "dotenv": "^16.3.1",
-    "ethers": "^6.8.0",
-    "hono": "^3.7.2",
-    "tslog": "^4.9.2",
-    "zod": "^3.22.4"
+    "@clickhouse/client-web": "latest",
+    "commander": "latest",
+    "dotenv": "latest",
+    "ethers": "latest",
+    "openapi3-ts": "latest",
+    "prom-client": "latest",
+    "tslog": "latest",
+    "zod": "latest"
   },
   "devDependencies": {
-    "bun-types": "^0.6.2",
-    "typescript": "^5.2.2"
+    "bun-types": "latest",
+    "typescript": "latest"
   }
 }
