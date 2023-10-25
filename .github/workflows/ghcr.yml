@@ -1,14 +1,14 @@
 name: GitHub Container Registry
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  ghcr:
+  build-and-push-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
