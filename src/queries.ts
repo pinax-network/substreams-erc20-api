@@ -11,7 +11,7 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     let query = `SELECT * FROM ${table}`;
 
     // JOIN block table
-    query += ` JOIN block ON block.block_id = ${table}.block_id`;
+    query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
 
     // WHERE statements
     const where = [];
@@ -27,7 +27,7 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     // https://github.com/pinax-network/substreams-erc20-api/issues/6
 
     // Join WHERE statements with AND
-    if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
+    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
     // Sort and Limit
     const limit = parseLimit(searchParams.get("limit"));
@@ -49,20 +49,20 @@ export function getContracts(searchParams: URLSearchParams) {
     let query = `SELECT * FROM ${table}`
 
     // JOIN block table
-    query += ` JOIN block ON block.block_id = ${table}.block_id`;
+    query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
 
     // WHERE statements
     const where = [];
-    if ( chain ) where.push(`chain == '${chain}'`);
-    if ( address ) where.push(`address == '${address}'`);
-    if ( symbol ) where.push(`symbol == '${symbol}'`);
-    if ( name ) where.push(`name == '${name}'`);
+    if (chain) where.push(`chain == '${chain}'`);
+    if (address) where.push(`address == '${address}'`);
+    if (symbol) where.push(`symbol == '${symbol}'`);
+    if (name) where.push(`name == '${name}'`);
 
     // TO-DO: sort by timestamp & block number
     // https://github.com/pinax-network/substreams-erc20-api/issues/4
 
     // Join WHERE statements with AND
-    if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
+    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
     // Sort and Limit
     const limit = parseLimit(searchParams.get("limit"));
@@ -82,15 +82,15 @@ export function getBalanceChanges(searchParams: URLSearchParams) {
     let query = `SELECT * FROM ${table}`;
 
     // JOIN block table
-    query += ` JOIN block ON block.block_id = ${table}.block_id`;
+    query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
 
     // WHERE statements
     const where = [];
 
     // equals
-    if ( chain ) where.push(`chain == '${chain}'`);
-    if ( owner ) where.push(`owner == '${owner}'`);
-    if ( contract ) where.push(`contract == '${contract}'`);
+    if (chain) where.push(`chain == '${chain}'`);
+    if (owner) where.push(`owner == '${owner}'`);
+    if (contract) where.push(`contract == '${contract}'`);
 
     // TO-DO: sort by timestamp & block number
     // https://github.com/pinax-network/substreams-erc20-api/issues/4
@@ -102,7 +102,7 @@ export function getBalanceChanges(searchParams: URLSearchParams) {
     // https://github.com/pinax-network/substreams-erc20-api/issues/7
 
     // Join WHERE statements with AND
-    if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
+    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
     // Sort and Limit
     const limit = parseLimit(searchParams.get("limit"));
