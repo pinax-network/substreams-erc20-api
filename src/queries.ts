@@ -24,7 +24,6 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     timestamp,
     FROM ${table} `;
 
-    console.log(query);
     // JOIN block table
     query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
     query += ` LEFT JOIN Contracts ON ${contractTable}.address = ${table}.address`;
@@ -33,7 +32,6 @@ export function getTotalSupply(searchParams: URLSearchParams) {
 
     // equals
     if (chain) where.push(`${table}.chain == '${chain}'`);
-    console.log(address);
     if (address) where.push(`${table}.address == '${address}'`);
 
     const operators = [
@@ -62,7 +60,6 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
     query += ` LIMIT ${limit} `
 
-    console.log(query);
     return query;
 }
 
@@ -168,8 +165,6 @@ export function getBalanceChanges(searchParams: URLSearchParams) {
     const sort_by = searchParams.get("sort_by");
     query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
     query += ` LIMIT ${limit} `
-
-    console.log(query)
     return query;
 }
 
