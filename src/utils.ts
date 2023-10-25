@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { config } from "./config";
+import { config } from "./config.js";
 
 export function getAddress(searchParams: URLSearchParams, key: string, required: boolean = false) {
     const address = formatAddress(searchParams.get(key));

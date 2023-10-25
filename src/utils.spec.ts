@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { formatAddress, checkValidAddress, getAddress } from "./utils";
+import { formatAddress, checkValidAddress, getAddress } from "./utils.js";
 
 const address = "0xdac17f958d2ee523a2206206994597c13d831ec7";
 

@@ -1,5 +1,5 @@
-import { DEFAULT_SORT_BY } from "./config";
-import { getAddress, parseLimit } from "./utils";
+import { DEFAULT_SORT_BY } from "./config.js";
+import { getAddress, parseLimit } from "./utils.js";
 
 export function getTotalSupply(searchParams: URLSearchParams) {
     // Params

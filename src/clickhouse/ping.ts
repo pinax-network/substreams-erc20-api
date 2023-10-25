@@ -1,6 +1,6 @@
 // from: https://github.com/pinax-network/substreams-clock-api/blob/main/src/clickhouse/ping.ts
 import { PingResult } from "@clickhouse/client-web";
-import client from "./createClient";
+import client from "./createClient.js";
 
 // Does not work with Bun's implementation of Node streams.
 export async function ping(): Promise<PingResult> {

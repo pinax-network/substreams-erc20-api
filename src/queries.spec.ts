@@ -1,7 +1,7 @@
 // from: https://github.com/pinax-network/substreams-clock-api/blob/main/src/queries.spec.ts
 
 import { expect, test } from "bun:test";
-import { getContracts, getChain, getTotalSupply, getBalanceChanges } from "./queries";
+import { getContracts, getChain, getTotalSupply, getBalanceChanges } from "./queries.js";
 
 const chain = "eth";
 const address = 'dac17f958d2ee523a2206206994597c13d831ec7'
