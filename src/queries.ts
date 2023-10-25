@@ -21,7 +21,10 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     if (address) where.push(`address == '${address}'`);
 
     // TO-DO: sort by timestamp & block number
-    // https://github.com/pinax-network/substreams-clock-api/blob/06b6aa3fc8276f04e8bafefaae2200ee9a052dfd/src/queries.ts#L18-L31
+    // https://github.com/pinax-network/substreams-erc20-api/issues/4
+
+    // TO-DO: Filter by symbol & name (INNER JOIN Contracts table)
+    // https://github.com/pinax-network/substreams-erc20-api/issues/6
 
     // Join WHERE statements with AND
     if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
@@ -56,9 +59,7 @@ export function getContracts(searchParams: URLSearchParams) {
     if ( name ) where.push(`name == '${name}'`);
 
     // TO-DO: sort by timestamp & block number
-    // https://github.com/pinax-network/substreams-clock-api/blob/06b6aa3fc8276f04e8bafefaae2200ee9a052dfd/src/queries.ts#L18-L31
-
-    // TO-DO: Filter by symbol & name (INNER JOIN Contracts table)
+    // https://github.com/pinax-network/substreams-erc20-api/issues/4
 
     // Join WHERE statements with AND
     if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
@@ -92,9 +93,13 @@ export function getBalanceChanges(searchParams: URLSearchParams) {
     if ( contract ) where.push(`contract == '${contract}'`);
 
     // TO-DO: sort by timestamp & block number
-    // https://github.com/pinax-network/substreams-clock-api/blob/06b6aa3fc8276f04e8bafefaae2200ee9a052dfd/src/queries.ts#L18-L31
+    // https://github.com/pinax-network/substreams-erc20-api/issues/4
 
     // TO-DO: Filter by symbol & name (INNER JOIN Contracts table)
+    // https://github.com/pinax-network/substreams-erc20-api/issues/6
+
+    // TO-DO: Filter by transaction_id
+    // https://github.com/pinax-network/substreams-erc20-api/issues/7
 
     // Join WHERE statements with AND
     if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
