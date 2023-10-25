@@ -1,157 +1,112 @@
-import { ethers } from "ethers";
-import { createClient } from "@clickhouse/client-web";
-import config from "./config";
+import { DEFAULT_SORT_BY } from "./config";
+import { getAddress, parseLimit } from "./utils";
 
-const client = createClient({
-    database: config.name,
-    host: config.dbHost,
-    username: config.username,
-    password: config.password,
-});
+export function getTotalSupply(searchParams: URLSearchParams) {
+    // Params
+    const address = getAddress(searchParams, "address", false);
+    const chain = searchParams.get("chain");
 
-function formatAddress(address: string) {
-    if (address.startsWith("0x")) {
-        // Remove the "0x" prefix and return the address
-        return address.slice(2);
-    }
-    // If it doesn't start with "0x", return the address as is
-    return address;
+    // Query
+    const table = 'TotalSupply'
+    let query = `SELECT * FROM ${table}`;
+
+    // JOIN block table
+    query += ` JOIN block ON block.block_id = ${table}.block_id`;
+
+    // WHERE statements
+    const where = [];
+
+    // equals
+    if (chain) where.push(`chain == '${chain}'`);
+    if (address) where.push(`address == '${address}'`);
+
+    // TO-DO: sort by timestamp & block number
+    // https://github.com/pinax-network/substreams-clock-api/blob/06b6aa3fc8276f04e8bafefaae2200ee9a052dfd/src/queries.ts#L18-L31
+
+    // Join WHERE statements with AND
+    if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
+
+    // Sort and Limit
+    const limit = parseLimit(searchParams.get("limit"));
+    const sort_by = searchParams.get("sort_by");
+    query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY}`
+    query += ` LIMIT ${limit}`
+    return query;
 }
 
-export async function getTotalSupply(
-    address: string | undefined,
-    block?: number | undefined
-) {
-    if (address) {
-        address = formatAddress(address);
-        if (ethers.isAddress(address)) {
-            let sqlquery: string = "";
-            if (block) {
-                sqlquery = `SELECT address,supply, block_number AS block,chain
-                    FROM TotalSupply
-                    JOIN block ON block.block_id = TotalSupply.block_id
-                    WHERE address = '${address}' AND block_number >= ${block}
-                    ORDER BY block_number
-                    LIMIT 1`;
-            } else {
-                sqlquery = `SELECT address,supply, chain FROM TotalSupply  JOIN block ON block.block_id = TotalSupply.block_id WHERE address = '${address}' ORDER BY block_number DESC LIMIT 1`;
-            }
-            const resultSet = await client.query({
-                query: sqlquery,
-                format: "JSONEachRow",
-            });
-            const dataset = await resultSet.json();
-            if (Array.isArray(dataset) && dataset.length !== 0) return dataset;
-            else return { error: "Contract data not available" };
-        } else {
-            console.log("Invalid Address");
-            return { error: "Invalid Address" };
-        }
-    }
+export function getContracts(searchParams: URLSearchParams) {
+    // Params
+    const chain = searchParams.get("chain");
+    const address = getAddress(searchParams, "address", false);
+    const symbol = searchParams.get("symbol");
+    const name = searchParams.get("name");
+
+    // Query
+    const table = 'Contracts'
+    let query = `SELECT * FROM ${table}`
+
+    // JOIN block table
+    query += ` JOIN block ON block.block_id = ${table}.block_id`;
+
+    // WHERE statements
+    const where = [];
+    if ( chain ) where.push(`chain == '${chain}'`);
+    if ( address ) where.push(`address == '${address}'`);
+    if ( symbol ) where.push(`symbol == '${symbol}'`);
+    if ( name ) where.push(`name == '${name}'`);
+
+    // TO-DO: sort by timestamp & block number
+    // https://github.com/pinax-network/substreams-clock-api/blob/06b6aa3fc8276f04e8bafefaae2200ee9a052dfd/src/queries.ts#L18-L31
+
+    // TO-DO: Filter by symbol & name (INNER JOIN Contracts table)
+
+    // Join WHERE statements with AND
+    if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
+
+    // Sort and Limit
+    const limit = parseLimit(searchParams.get("limit"));
+    const sort_by = searchParams.get("sort_by");
+    query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY}`
+    query += ` LIMIT ${limit}`
+    return query;
 }
 
-export async function getContract(address: string | undefined) {
-    if (address) {
-        address = formatAddress(address);
-        if (ethers.isAddress(address)) {
-            let sqlquery: string = `SELECT address,name,symbol,decimals,chain FROM Contracts WHERE address = '${address}'`;
-            const resultSet = await client.query({
-                query: sqlquery,
-                format: "JSONEachRow",
-            });
-            const dataset = await resultSet.json();
-            if (Array.isArray(dataset) && dataset.length !== 0) return dataset;
-            else return { error: "Contract data not available" };
-        } else {
-            console.log("Invalid Address");
-            return { error: "Invalid Address" };
-        }
-    }
+export function getBalanceChanges(searchParams: URLSearchParams) {
+    const chain = searchParams.get("chain");
+    const contract = getAddress(searchParams, "contract", false);
+    const owner = getAddress(searchParams, "owner", false);
+
+    // SQL Query
+    const table = 'balance_changes'
+    let query = `SELECT * FROM ${table}`;
+
+    // JOIN block table
+    query += ` JOIN block ON block.block_id = ${table}.block_id`;
+
+    // WHERE statements
+    const where = [];
+
+    // equals
+    if ( chain ) where.push(`chain == '${chain}'`);
+    if ( owner ) where.push(`owner == '${owner}'`);
+    if ( contract ) where.push(`contract == '${contract}'`);
+
+    // TO-DO: sort by timestamp & block number
+    // https://github.com/pinax-network/substreams-clock-api/blob/06b6aa3fc8276f04e8bafefaae2200ee9a052dfd/src/queries.ts#L18-L31
+
+    // TO-DO: Filter by symbol & name (INNER JOIN Contracts table)
+
+    // Join WHERE statements with AND
+    if ( where.length ) query += ` WHERE (${where.join(' AND ')})`;
+
+    // Sort and Limit
+    const limit = parseLimit(searchParams.get("limit"));
+    const sort_by = searchParams.get("sort_by");
+    query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY}`
+    query += ` LIMIT ${limit}`
+    return query;
 }
 
-export async function getBalance(
-    wallet: string | undefined,
-    address?: string | undefined,
-    block?: number | undefined
-) {
-    if (wallet) {
-        wallet = formatAddress(wallet);
-        if (address) address = formatAddress(address);
-        if (ethers.isAddress(wallet)) {
-            let sqlquery: string = "";
-
-            //GET all balance of every contract for a wallet LATEST BLOCK
-            if (!block && !address) {
-                sqlquery = `WITH RankedBalances AS (
-                        SELECT
-                            contract,
-                            new_balance AS balance,
-                            chain,
-                            ROW_NUMBER() OVER (PARTITION BY contract ORDER BY block_number DESC) AS rn
-                        FROM balance_changes
-                        JOIN block ON block.block_id = balance_changes.block_id
-                        WHERE owner = '${wallet}'
-                    )
-                    SELECT contract, balance,chain
-                    FROM RankedBalances
-                    WHERE rn = 1`;
-            }
-
-            //GET all balance of every contract for a wallet at specific block
-            else if (block && !address) {
-                sqlquery = `WITH RankedBalances AS (
-                        SELECT
-                            contract,
-                            new_balance AS balance,
-                            block_number,
-                            chain,
-                            ROW_NUMBER() OVER (PARTITION BY contract ORDER BY block_number) AS rn
-                        FROM balance_changes
-                        JOIN block ON block.block_id = balance_changes.block_id
-                        WHERE owner = '${wallet}' AND block_number >= ${block}
-                    )
-                    SELECT contract, balance, block_number,chain
-                    FROM RankedBalances
-                    WHERE rn = 1;
-                    `;
-            }
-            //GET  balance of a specific contract for a wallet LATEST BLOCK
-            else if (!block && address) {
-                if (ethers.isAddress(address)) {
-                    sqlquery = `SELECT contract, new_balance AS balance,chain 
-                    FROM balance_changes
-                    JOIN block ON block.block_id = balance_changes.block_id
-                    WHERE owner = '${wallet}' AND contract = '${address}'
-                    ORDER BY block_number DESC
-                    LIMIT 1`;
-
-                    console.log(sqlquery);
-                } else {
-                    console.log("Invalid Address");
-                    return { error: "Invalid Address" };
-                }
-            } else if (block && address) {
-                sqlquery = `SELECT contract,
-                    new_balance AS balance,
-                    block_number AS block,
-                    chain
-                    FROM balance_changes
-                    JOIN block ON block.block_id = balance_changes.block_id
-                    WHERE owner = '${wallet}' AND contract = '${address}' AND block_number >= ${block}
-                    ORDER BY block_number
-                    LIMIT 1`;
-            }
-
-            const resultSet = await client.query({
-                query: sqlquery,
-                format: "JSONEachRow",
-            });
-            const dataset = await resultSet.json();
-            if (Array.isArray(dataset) && dataset.length !== 0) return dataset;
-            else return { error: "Contract data not available" };
-        } else {
-            console.log("Invalid Wallet");
-            return { error: "Invalid Wallet" };
-        }
-    }
+export function getChain() {
+    return `SELECT DISTINCT chain FROM module_hashes`;
 }
