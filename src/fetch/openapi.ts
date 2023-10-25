@@ -27,16 +27,17 @@ const balance_example = {};
 
 // TO-DO: apply timestamp filters to docs
 // https://github.com/pinax-network/substreams-erc20-api/issues/4
-const timestampSchema: SchemaObject = { anyOf: [
-    {type: "number"},
-    {type: "string", format: "date"},
-    {type: "string", format: "date-time"}
+const timestampSchema: SchemaObject = {
+  anyOf: [
+    { type: "number" },
+    { type: "string", format: "date" },
+    { type: "string", format: "date-time" }
   ]
 };
 const timestampExamples: ExampleObject = {
   unix: { summary: `Unix Timestamp (seconds)` },
   date: { summary: `Full-date notation`, value: '2023-10-18' },
-  datetime: { summary: `Date-time notation`, value: '2023-10-18T00:00:00Z'},
+  datetime: { summary: `Date-time notation`, value: '2023-10-18T00:00:00Z' },
 }
 
 const parameterChain: ParameterObject = {
@@ -44,15 +45,16 @@ const parameterChain: ParameterObject = {
   in: "query",
   description: "Filter by chain",
   required: false,
-  schema: {enum: chains},
+  schema: { enum: chains },
 }
 const parameterString = (name: string = "address", required = false) => ({
   name,
   in: "query",
   description: `Filter by ${name}`,
   required,
-  schema: {type: "string"},
+  schema: { type: "string" },
 } as ParameterObject);
+
 
 const parameterLimit: ParameterObject = {
   name: "limit",
@@ -67,7 +69,7 @@ export default new OpenApiBuilder()
     title: pkg.name,
     version: pkg.version,
     description: pkg.description,
-    license: {name: pkg.license},
+    license: { name: pkg.license },
   })
   .addExternalDocs({ url: pkg.homepage, description: "Extra documentation" })
   .addSecurityScheme("auth-key", { type: "http", scheme: "bearer" })
@@ -95,6 +97,27 @@ export default new OpenApiBuilder()
       parameters: [
         parameterChain,
         parameterString("address"),
+        parameterString("name"),
+        parameterString("symbol"),
+        ...["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"].map(name => {
+          return {
+            name,
+            in: "query",
+            description: "Filter " + name.replace(/_/g, " "),
+            required: false,
+            schema: timestampSchema,
+            examples: timestampExamples,
+          } as ParameterObject
+        }),
+        ...["greater_or_equals_by_block_number", "greater_by_block_number", "less_or_equals_by_block_number", "less_by_block_number"].map(name => {
+          return {
+            name,
+            in: "query",
+            description: "Filter " + name.replace(/_/g, " "),
+            required: false,
+            schema: { type: "number" },
+          } as ParameterObject
+        }),
         parameterLimit,
       ],
       responses: {
@@ -112,6 +135,25 @@ export default new OpenApiBuilder()
         parameterString("address"),
         parameterString("symbol"),
         parameterString("name"),
+        ...["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"].map(name => {
+          return {
+            name,
+            in: "query",
+            description: "Filter " + name.replace(/_/g, " "),
+            required: false,
+            schema: timestampSchema,
+            examples: timestampExamples,
+          } as ParameterObject
+        }),
+        ...["greater_or_equals_by_block_number", "greater_by_block_number", "less_or_equals_by_block_number", "less_by_block_number"].map(name => {
+          return {
+            name,
+            in: "query",
+            description: "Filter " + name.replace(/_/g, " "),
+            required: false,
+            schema: { type: "number" },
+          } as ParameterObject
+        }),
         parameterLimit,
       ],
       responses: {
@@ -128,6 +170,26 @@ export default new OpenApiBuilder()
         parameterChain,
         parameterString("owner"),
         parameterString("contract"),
+        parameterString("transaction_id"),
+        ...["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"].map(name => {
+          return {
+            name,
+            in: "query",
+            description: "Filter " + name.replace(/_/g, " "),
+            required: false,
+            schema: timestampSchema,
+            examples: timestampExamples,
+          } as ParameterObject
+        }),
+        ...["greater_or_equals_by_block_number", "greater_by_block_number", "less_or_equals_by_block_number", "less_by_block_number"].map(name => {
+          return {
+            name,
+            in: "query",
+            description: "Filter " + name.replace(/_/g, " "),
+            required: false,
+            schema: { type: "number" },
+          } as ParameterObject
+        }),
         parameterLimit,
       ],
       responses: {
@@ -140,21 +202,21 @@ export default new OpenApiBuilder()
     get: {
       tags: [TAGS.HEALTH],
       summary: "Performs health checks and checks if the database is accessible",
-      responses: {200: { description: "OK", content: { "text/plain": {example: "OK"}} } },
+      responses: { 200: { description: "OK", content: { "text/plain": { example: "OK" } } } },
     },
   })
   .addPath("/metrics", {
     get: {
       tags: [TAGS.MONITORING],
       summary: "Prometheus metrics",
-      responses: {200: { description: "Prometheus metrics", content: { "text/plain": { example: await registry.metrics(), schema: { type: "string" } } }}},
+      responses: { 200: { description: "Prometheus metrics", content: { "text/plain": { example: await registry.metrics(), schema: { type: "string" } } } } },
     },
   })
   .addPath("/openapi", {
     get: {
       tags: [TAGS.DOCS],
       summary: "OpenAPI specification",
-      responses: {200: {description: "OpenAPI JSON Specification", content: { "application/json": { schema: { type: "string" } } } }},
+      responses: { 200: { description: "OpenAPI JSON Specification", content: { "application/json": { schema: { type: "string" } } } } },
     },
   })
   .getSpecAsJson();

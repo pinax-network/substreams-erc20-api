@@ -8,13 +8,14 @@ import { toJSON } from "./utils.js";
 export default async function (req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    logger.info({searchParams: Object.fromEntries(Array.from(searchParams))});
+    logger.info({ searchParams: Object.fromEntries(Array.from(searchParams)) });
     const query = await getBalanceChanges(searchParams);
+
     const response = await makeQuery(query)
     return toJSON(response.data);
   } catch (e: any) {
     logger.error(e);
-    prometheus.request_error.inc({pathname: "/balance", status: 400});
+    prometheus.request_error.inc({ pathname: "/balance", status: 400 });
     return new Response(e.message, { status: 400 });
   }
 }
