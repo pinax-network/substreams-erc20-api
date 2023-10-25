@@ -25,6 +25,8 @@ const supply_example = {};
 const contract_example = {};
 const balance_example = {};
 
+// TO-DO: apply timestamp filters to docs
+// https://github.com/pinax-network/substreams-erc20-api/issues/4
 const timestampSchema: SchemaObject = { anyOf: [
     {type: "number"},
     {type: "string", format: "date"},

@@ -3,6 +3,7 @@ import { makeQuery } from "../clickhouse/makeQuery.js";
 import { logger } from "../logger.js";
 import { getContracts } from "../queries.js";
 import * as prometheus from "../prometheus.js";
+import { toJSON } from "./utils.js";
 
 export default async function (req: Request) {
   try {
@@ -10,7 +11,7 @@ export default async function (req: Request) {
     logger.info({searchParams: Object.fromEntries(Array.from(searchParams))});
     const query = await getContracts(searchParams);
     const response = await makeQuery(query)
-    return new Response(JSON.stringify(response.data), { headers: { "Content-Type": "application/json" } });
+    return toJSON(response.data);
   } catch (e: any) {
     logger.error(e);
     prometheus.request_error.inc({pathname: "/contract", status: 400});
