@@ -69,7 +69,7 @@ export default new OpenApiBuilder()
     title: pkg.name,
     version: pkg.version,
     description: pkg.description,
-    license: { name: pkg.license },
+    license: { name: pkg.license, url: `${pkg.homepage}/blob/main/LICENSE` },
   })
   .addExternalDocs({ url: pkg.homepage, description: "Extra documentation" })
   .addSecurityScheme("auth-key", { type: "http", scheme: "bearer" })
