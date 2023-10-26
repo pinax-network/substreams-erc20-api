@@ -11,7 +11,7 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     // Query
     const table = 'TotalSupply'
     const contractTable = 'Contracts';
-    let query = `SELECT 
+    let query = `SELECT
     ${table}.address as address,
     ${table}.supply as supply,
     ${table}.id as id,
@@ -52,7 +52,7 @@ export function getTotalSupply(searchParams: URLSearchParams) {
 
 
     // Join WHERE statements with AND
-    if (where.length) query += ` WHERE(${where.join(' AND ')})`;
+    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
     // Sort and Limit
     const limit = parseLimit(searchParams.get("limit"));
@@ -98,7 +98,7 @@ export function getContracts(searchParams: URLSearchParams) {
     }
 
     // Join WHERE statements with AND
-    if (where.length) query += ` WHERE(${where.join(' AND ')})`;
+    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
     // Sort and Limit
     const limit = parseLimit(searchParams.get("limit"));
@@ -158,7 +158,7 @@ export function getBalanceChanges(searchParams: URLSearchParams) {
     }
 
     // Join WHERE statements with AND
-    if (where.length) query += ` WHERE(${where.join(' AND ')})`;
+    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
     // Sort and Limit
     const limit = parseLimit(searchParams.get("limit"));
