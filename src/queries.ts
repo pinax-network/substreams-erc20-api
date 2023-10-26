@@ -21,7 +21,7 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     ${contractTable}.name as name,
     ${contractTable}.symbol as symbol,
     ${contractTable}.decimals as decimals,
-    timestamp,
+    timestamp
     FROM ${table} `;
 
     // JOIN block table
