@@ -3,9 +3,7 @@ import pkg from "../../package.json" assert { type: "json" };
 
 import { OpenApiBuilder, SchemaObject, ExampleObject, ParameterObject } from "openapi3-ts/oas31";
 import { config } from "../config.js";
-import { getBalanceChanges, getContracts, getTotalSupply } from "../queries.js";
 import { registry } from "../prometheus.js";
-import { makeQuery } from "../clickhouse/makeQuery.js";
 import { supportedChainsQuery } from "./chains.js";
 
 const TAGS = {
@@ -14,6 +12,10 @@ const TAGS = {
   USAGE: "Usage",
   DOCS: "Documentation",
 } as const;
+
+const arrayFilter = ["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"];
+
+
 
 const chains = await supportedChainsQuery();
 // const supply_example = (await makeQuery(await getTotalSupply( new URLSearchParams({limit: "1"})))).data;
@@ -64,6 +66,28 @@ const parameterLimit: ParameterObject = {
   schema: { type: "number", maximum: config.maxLimit, minimum: 1 },
 }
 
+
+const timestampFilter = arrayFilter.map(name => {
+  return {
+    name,
+    in: "query",
+    description: "Filter " + name.replace(/_/g, " "),
+    required: false,
+    schema: timestampSchema,
+    examples: timestampExamples,
+  } as ParameterObject
+})
+
+const blockFilter = arrayFilter.map(name => {
+  return {
+    name,
+    in: "query",
+    description: "Filter " + name.replace(/_/g, " "),
+    required: false,
+    schema: { type: "number" },
+  } as ParameterObject
+})
+
 export default new OpenApiBuilder()
   .addInfo({
     title: pkg.name,
@@ -99,25 +123,8 @@ export default new OpenApiBuilder()
         parameterString("address"),
         parameterString("name"),
         parameterString("symbol"),
-        ...["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"].map(name => {
-          return {
-            name,
-            in: "query",
-            description: "Filter " + name.replace(/_/g, " "),
-            required: false,
-            schema: timestampSchema,
-            examples: timestampExamples,
-          } as ParameterObject
-        }),
-        ...["greater_or_equals_by_block_number", "greater_by_block_number", "less_or_equals_by_block_number", "less_by_block_number"].map(name => {
-          return {
-            name,
-            in: "query",
-            description: "Filter " + name.replace(/_/g, " "),
-            required: false,
-            schema: { type: "number" },
-          } as ParameterObject
-        }),
+        ...timestampFilter,
+        ...blockFilter,
         parameterLimit,
       ],
       responses: {
@@ -135,25 +142,8 @@ export default new OpenApiBuilder()
         parameterString("address"),
         parameterString("symbol"),
         parameterString("name"),
-        ...["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"].map(name => {
-          return {
-            name,
-            in: "query",
-            description: "Filter " + name.replace(/_/g, " "),
-            required: false,
-            schema: timestampSchema,
-            examples: timestampExamples,
-          } as ParameterObject
-        }),
-        ...["greater_or_equals_by_block_number", "greater_by_block_number", "less_or_equals_by_block_number", "less_by_block_number"].map(name => {
-          return {
-            name,
-            in: "query",
-            description: "Filter " + name.replace(/_/g, " "),
-            required: false,
-            schema: { type: "number" },
-          } as ParameterObject
-        }),
+        ...timestampFilter,
+        ...blockFilter,
         parameterLimit,
       ],
       responses: {
@@ -171,25 +161,8 @@ export default new OpenApiBuilder()
         parameterString("owner"),
         parameterString("contract"),
         parameterString("transaction_id"),
-        ...["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"].map(name => {
-          return {
-            name,
-            in: "query",
-            description: "Filter " + name.replace(/_/g, " "),
-            required: false,
-            schema: timestampSchema,
-            examples: timestampExamples,
-          } as ParameterObject
-        }),
-        ...["greater_or_equals_by_block_number", "greater_by_block_number", "less_or_equals_by_block_number", "less_by_block_number"].map(name => {
-          return {
-            name,
-            in: "query",
-            description: "Filter " + name.replace(/_/g, " "),
-            required: false,
-            schema: { type: "number" },
-          } as ParameterObject
-        }),
+        ...timestampFilter,
+        ...blockFilter,
         parameterLimit,
       ],
       responses: {

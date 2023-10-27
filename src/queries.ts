@@ -1,6 +1,23 @@
 import { DEFAULT_SORT_BY } from "./config.js";
 import { getAddress, parseLimit, parseTimestamp } from "./utils.js";
 
+
+
+export function addTimestampBlockFilter(searchParams: URLSearchParams, where: any[]) {
+    const operators = [
+        ["greater_or_equals", ">="],
+        ["greater", ">"],
+        ["less_or_equals", "<="],
+        ["less", "<"],
+    ]
+    for (const [key, operator] of operators) {
+        const block_number = searchParams.get(`${key}_by_block_number`);
+        const timestamp = parseTimestamp(searchParams.get(`${key}_by_timestamp`));
+        if (block_number) where.push(`block_number ${operator} ${block_number}`);
+        if (timestamp) where.push(`toUnixTimestamp(timestamp) ${operator} ${timestamp}`);
+    }
+}
+
 export function getTotalSupply(searchParams: URLSearchParams) {
     // Params
     const address = getAddress(searchParams, "address", false);
@@ -34,18 +51,8 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     if (chain) where.push(`${table}.chain == '${chain}'`);
     if (address) where.push(`${table}.address == '${address}'`);
 
-    const operators = [
-        ["greater_or_equals", ">="],
-        ["greater", ">"],
-        ["less_or_equals", "<="],
-        ["less", "<"],
-    ]
-    for (const [key, operator] of operators) {
-        const block_number = searchParams.get(`${key}_by_block_number`);
-        const timestamp = parseTimestamp(searchParams.get(`${key}_by_timestamp`));
-        if (block_number) where.push(`block_number ${operator} ${block_number}`);
-        if (timestamp) where.push(`toUnixTimestamp(timestamp) ${operator} ${timestamp}`);
-    }
+    // timestamp and block filter
+    addTimestampBlockFilter(searchParams, where);
 
     if (symbol) where.push(`symbol == '${symbol}'`);
     if (name) where.push(`name == '${name}'`);
@@ -84,18 +91,8 @@ export function getContracts(searchParams: URLSearchParams) {
     if (symbol) where.push(`symbol == '${symbol}'`);
     if (name) where.push(`name == '${name}'`);
 
-    const operators = [
-        ["greater_or_equals", ">="],
-        ["greater", ">"],
-        ["less_or_equals", "<="],
-        ["less", "<"],
-    ]
-    for (const [key, operator] of operators) {
-        const block_number = searchParams.get(`${key}_by_block_number`);
-        const timestamp = parseTimestamp(searchParams.get(`${key}_by_timestamp`));
-        if (block_number) where.push(`block_number ${operator} ${block_number}`);
-        if (timestamp) where.push(`toUnixTimestamp(timestamp) ${operator} ${timestamp}`);
-    }
+    // timestamp and block filter
+    addTimestampBlockFilter(searchParams, where);
 
     // Join WHERE statements with AND
     if (where.length) query += ` WHERE(${where.join(' AND ')})`;
@@ -144,18 +141,9 @@ export function getBalanceChanges(searchParams: URLSearchParams) {
     if (owner) where.push(`owner == '${owner}'`);
     if (contract) where.push(`contract == '${contract}'`);
     if (transaction_id) where.push(`${table}.transaction_id == '${transaction_id}'`);
-    const operators = [
-        ["greater_or_equals", ">="],
-        ["greater", ">"],
-        ["less_or_equals", "<="],
-        ["less", "<"],
-    ]
-    for (const [key, operator] of operators) {
-        const block_number = searchParams.get(`${key}_by_block_number`);
-        const timestamp = parseTimestamp(searchParams.get(`${key}_by_timestamp`));
-        if (block_number) where.push(`block_number ${operator} ${block_number}`);
-        if (timestamp) where.push(`toUnixTimestamp(timestamp) ${operator} ${timestamp}`);
-    }
+
+    // timestamp and block filter
+    addTimestampBlockFilter(searchParams, where);
 
     // Join WHERE statements with AND
     if (where.length) query += ` WHERE(${where.join(' AND ')})`;

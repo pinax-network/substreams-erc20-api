@@ -6,7 +6,7 @@ import { getChain } from "../queries.js";
 import { toJSON } from "./utils.js";
 
 export async function supportedChainsQuery() {
-  const response = await makeQuery<{chain: string}>(getChain());
+  const response = await makeQuery<{ chain: string }>(getChain());
   return response.data.map((r) => r.chain);
 }
 
@@ -16,7 +16,7 @@ export default async function (req: Request) {
     return toJSON(chains);
   } catch (e: any) {
     logger.error(e);
-    prometheus.request_error.inc({pathname: "/chains", status: 400});
+    prometheus.request_error.inc({ pathname: "/chains", status: 400 });
     return new Response(e.message, { status: 400 });
   }
 }

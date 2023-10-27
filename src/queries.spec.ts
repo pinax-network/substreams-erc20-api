@@ -25,6 +25,7 @@ test("getContracts Optional", () => {
 });
 
 
+
 //Test TotalSupply 
 test("getTotalSupply", () => {
     expect(getTotalSupply(new URLSearchParams({ chain, address })).replace(/\s+/g, ''))
