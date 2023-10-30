@@ -1,8 +1,7 @@
 import { expect, test } from "bun:test";
 import { formatAddress, checkValidAddress, getAddress, parseBlockId, parseTimestamp } from "./utils.js";
-
+import { addTimestampBlockFilter } from "./queries.js";
 const address = "0xdac17f958d2ee523a2206206994597c13d831ec7";
-
 test("formatAddress", () => {
     expect(formatAddress(address)).toBe("dac17f958d2ee523a2206206994597c13d831ec7")
 });
@@ -12,6 +11,16 @@ test("checkValidAddress", () => {
     checkValidAddress(address)
     expect(() => checkValidAddress(address)).not.toThrow();
     expect(() => checkValidAddress("foobar")).toThrow("Invalid address");
+});
+
+test("addTimestampBlockFilter", () => {
+    let where: any[] = [];
+    const searchParams = new URLSearchParams({ address: address, greater_or_equals_by_timestamp: "1697587200", less_or_equals_by_timestamp: "1697587100", greater_or_equals_by_block_number: "123", less_or_equals_by_block_number: "123" });
+    addTimestampBlockFilter(searchParams, where)
+    expect(where).toContain("block_number >= 123");
+    expect(where).toContain("block_number <= 123");
+    expect(where).toContain("toUnixTimestamp(timestamp) >= 1697587200");
+    expect(where).toContain("toUnixTimestamp(timestamp) <= 1697587100");
 });
 
 test("parseBlockId", () => {
