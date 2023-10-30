@@ -1,7 +1,7 @@
 // from: https://github.com/pinax-network/substreams-clock-api/blob/main/src/queries.spec.ts
 
 import { expect, test } from "bun:test";
-import { getContracts, getChain, getTotalSupply, getBalanceChanges } from "./queries.js";
+import { getContracts, getChain, getTotalSupply, getBalanceChanges, addTimestampBlockFilter } from "./queries.js";
 
 const chain = "eth";
 const address = 'dac17f958d2ee523a2206206994597c13d831ec7'
@@ -32,6 +32,16 @@ test("getContracts Optional", () => {
         LIMIT ${limit}`.replace(/\s+/g, ''));
 });
 
+//Timestamp and Block Filter
+test("addTimestampBlockFilter", () => {
+    let where: any[] = [];
+    const searchParams = new URLSearchParams({ address: address, greater_or_equals_by_timestamp: "1697587200", less_or_equals_by_timestamp: "1697587100", greater_or_equals_by_block_number: "123", less_or_equals_by_block_number: "123" });
+    addTimestampBlockFilter(searchParams, where)
+    expect(where).toContain("block_number >= 123");
+    expect(where).toContain("block_number <= 123");
+    expect(where).toContain("toUnixTimestamp(timestamp) >= 1697587200");
+    expect(where).toContain("toUnixTimestamp(timestamp) <= 1697587100");
+});
 
 
 // Test TotalSupply
