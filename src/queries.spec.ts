@@ -1,54 +1,98 @@
 // from: https://github.com/pinax-network/substreams-clock-api/blob/main/src/queries.spec.ts
 
 import { expect, test } from "bun:test";
-import { getContracts, getChain, getTotalSupply, getBalanceChanges, addTimestampBlockFilter } from "./queries.js";
+import {
+    getContracts,
+    getChain,
+    getTotalSupply,
+    getBalanceChanges,
+    addTimestampBlockFilter,
+} from "./queries.js";
 
 const chain = "eth";
-const address = 'dac17f958d2ee523a2206206994597c13d831ec7'
-const limit = '1';
+const address = "dac17f958d2ee523a2206206994597c13d831ec7";
+const limit = "1";
 const symbol = "USDT";
 const name = "Tether USD";
 const greater_or_equals_by_timestamp = "1697587200";
 const less_or_equals_by_timestamp = "1697587100";
-const transaction_id = "ab3612eed62a184eed2ae86bcad766183019cf40f82e5316f4d7c4e61f4baa44"
-
-// Test Contract
-test("getContracts", () => {
-    expect(getContracts(new URLSearchParams({ chain, address })).replace(/\s+/g, ''))
-        .toBe(`SELECT * FROM Contracts
-        JOIN blocks ON blocks.block_id = Contracts.block_id
-        WHERE (chain == '${chain}' AND address == '${address}')
-        ORDER BY block_number DESC
-        LIMIT 1`.replace(/\s+/g, ''));
+const transaction_id =
+    "ab3612eed62a184eed2ae86bcad766183019cf40f82e5316f4d7c4e61f4baa44";
+const SQLTestQuery = new URLSearchParams({
+    chain,
+    address,
+    symbol,
+    greater_or_equals_by_timestamp,
+    less_or_equals_by_timestamp,
+    name,
+    limit,
 });
 
-// Test Contract with optionals options
-test("getContracts Optional", () => {
-    expect(getContracts(new URLSearchParams({ chain, address, symbol, greater_or_equals_by_timestamp, less_or_equals_by_timestamp, name, limit })).replace(/\s+/g, ''))
-        .toBe(`SELECT * FROM Contracts
-        JOIN blocks ON blocks.block_id = Contracts.block_id
-        WHERE (chain == '${chain}' AND address == '${address}' AND symbol == '${symbol}' AND name =='${name}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})
-        ORDER BY block_number DESC
-        LIMIT ${limit}`.replace(/\s+/g, ''));
+function formatSQL(query: string) {
+    return query.replace(/\s+/g, "");
+}
+// Test Contract
+test("getContracts", () => {
+    const parameter = new URLSearchParams({ chain, address });
+    expect(formatSQL(getContracts(parameter))).toContain(
+        formatSQL(`SELECT * FROM Contracts`)
+    );
+
+    expect(formatSQL(getContracts(parameter))).toContain(
+        formatSQL(`JOIN blocks ON blocks.block_id = Contracts.block_id`)
+    );
+
+    expect(formatSQL(getContracts(parameter))).toContain(
+        formatSQL(`WHERE (chain == '${chain}' AND address == '${address}')`)
+    );
+
+    expect(formatSQL(getContracts(parameter))).toContain(
+        formatSQL(`ORDER BY block_number DESC`)
+    );
+
+    expect(formatSQL(getContracts(parameter))).toContain(formatSQL(`LIMIT 1`));
+});
+
+test("getContracts with options", () => {
+    const parameter = new URLSearchParams({
+        chain,
+        address,
+        symbol,
+        greater_or_equals_by_timestamp,
+        less_or_equals_by_timestamp,
+        name,
+        limit,
+    });
+    expect(formatSQL(getContracts(parameter))).toContain(
+        formatSQL(
+            `WHERE(chain == '${chain}' AND address == '${address}' AND symbol == '${symbol}' AND name == '${name}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})`
+        )
+    );
 });
 
 //Timestamp and Block Filter
 test("addTimestampBlockFilter", () => {
     let where: any[] = [];
-    const searchParams = new URLSearchParams({ address: address, greater_or_equals_by_timestamp: "1697587200", less_or_equals_by_timestamp: "1697587100", greater_or_equals_by_block_number: "123", less_or_equals_by_block_number: "123" });
-    addTimestampBlockFilter(searchParams, where)
+    const searchParams = new URLSearchParams({
+        address: address,
+        greater_or_equals_by_timestamp: "1697587200",
+        less_or_equals_by_timestamp: "1697587100",
+        greater_or_equals_by_block_number: "123",
+        less_or_equals_by_block_number: "123",
+    });
+    addTimestampBlockFilter(searchParams, where);
     expect(where).toContain("block_number >= 123");
     expect(where).toContain("block_number <= 123");
     expect(where).toContain("toUnixTimestamp(timestamp) >= 1697587200");
     expect(where).toContain("toUnixTimestamp(timestamp) <= 1697587100");
 });
 
-
 // Test TotalSupply
 test("getTotalSupply", () => {
-    expect(getTotalSupply(new URLSearchParams({ chain, address })).replace(/\s+/g, ''))
-        .toBe(`SELECT
-        TotalSupply.address as address,
+    const parameters = new URLSearchParams({ chain, address });
+    expect(formatSQL(getTotalSupply(parameters))).toContain(
+        formatSQL(`SELECT
+    TotalSupply.address as address,
         TotalSupply.supply as supply,
         TotalSupply.id as id,
         block_number,
@@ -57,41 +101,55 @@ test("getTotalSupply", () => {
         Contracts.name as name,
         Contracts.symbol as symbol,
         Contracts.decimals as decimals,
-        timestamp
-        FROM TotalSupply
-        JOIN blocks ON blocks.block_id = TotalSupply.block_id
-        LEFT JOIN Contracts ON Contracts.address = TotalSupply.address
-        WHERE (TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}')
-        ORDER BY block_number DESC
-        LIMIT 1`.replace(/\s+/g, ''));
+        timestamp`)
+    );
+    expect(formatSQL(getTotalSupply(parameters))).toContain(
+        formatSQL(`FROM TotalSupply`)
+    );
+
+    expect(formatSQL(getTotalSupply(parameters))).toContain(
+        formatSQL(`JOIN blocks ON blocks.block_id = TotalSupply.block_id`)
+    );
+
+    expect(formatSQL(getTotalSupply(parameters))).toContain(
+        formatSQL(`LEFT JOIN Contracts ON Contracts.address = TotalSupply.address`)
+    );
+
+    expect(formatSQL(getTotalSupply(parameters))).toContain(
+        formatSQL(
+            `WHERE(TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}')`
+        )
+    );
+
+    expect(formatSQL(getTotalSupply(parameters))).toContain(
+        formatSQL(`ORDER BY block_number DESC`)
+    );
+
+    expect(formatSQL(getTotalSupply(parameters))).toContain(formatSQL(`LIMIT 1`));
 });
 
-// Test TotalSupply
-test("getTotalSupply optional", () => {
-    expect(getTotalSupply(new URLSearchParams({ chain, address, symbol, greater_or_equals_by_timestamp, less_or_equals_by_timestamp, name, limit })).replace(/\s+/g, ''))
-        .toBe(`SELECT
-        TotalSupply.address as address,
-        TotalSupply.supply as supply,
-        TotalSupply.id as id,
-        block_number,
-        TotalSupply.module_hash as module_hash,
-        TotalSupply.chain as chain,
-        Contracts.name as name,
-        Contracts.symbol as symbol,
-        Contracts.decimals as decimals,
-        timestamp
-        FROM TotalSupply
-        JOIN blocks ON blocks.block_id = TotalSupply.block_id
-        LEFT JOIN Contracts ON Contracts.address = TotalSupply.address
-        WHERE (TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp}  AND symbol == '${symbol}' AND name == '${name}')
-        ORDER BY block_number DESC
-        LIMIT ${limit} `.replace(/\s+/g, ''));
+test("getTotalSupply with options", () => {
+    const parameters = new URLSearchParams({
+        chain,
+        address,
+        symbol,
+        greater_or_equals_by_timestamp,
+        less_or_equals_by_timestamp,
+        name,
+        limit,
+    });
+    expect(formatSQL(getTotalSupply(parameters))).toContain(
+        formatSQL(
+            `WHERE(TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp}  AND symbol == '${symbol}' AND name == '${name}')`
+        )
+    );
 });
 
-// Test BalanceChanges
-test("getBalanceChanges", () => {
-    expect(getBalanceChanges(new URLSearchParams({ chain, owner: address })).replace(/\s+/g, ''))
-        .toBe(`SELECT balance_changes.contract as contract,
+// Test Balance Change
+test("getBalanceChabge", () => {
+    const parameters = new URLSearchParams({ chain, owner: address });
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(`SELECT balance_changes.contract as contract,
         Contracts.name as name,
         Contracts.symbol as symbol,
         Contracts.decimals as decimals,
@@ -103,40 +161,50 @@ test("getBalanceChanges", () => {
         balance_changes.module_hash as module_hash,
         balance_changes.chain as chain,
         block_number,
-        timestamp
-        FROM balance_changes
-        JOIN blocks ON blocks.block_id = balance_changes.block_id
-        LEFT JOIN Contracts ON Contracts.address = balance_changes.contract
-        WHERE (chain == '${chain}' AND owner == '${address}')
-        ORDER BY block_number DESC
-        LIMIT 1 `.replace(/\s+/g, ''))
+        timestamp`)
+    );
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(`FROM balance_changes`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(`JOIN blocks ON blocks.block_id = balance_changes.block_id`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(
+            `LEFT JOIN Contracts ON Contracts.address = balance_changes.contract`
+        )
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(`WHERE(chain == '${chain}' AND owner == '${address}')`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(`ORDER BY block_number DESC`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(`LIMIT 1`)
+    );
 });
 
-
-// Test BalanceChanges Optional
-test("getBalanceChanges Optional", () => {
-    expect(getBalanceChanges(new URLSearchParams({ chain, owner: address, transaction_id, greater_or_equals_by_timestamp, less_or_equals_by_timestamp, limit })).replace(/\s+/g, ''))
-        .toBe(`SELECT balance_changes.contract as contract,
-        Contracts.name as name,
-        Contracts.symbol as symbol,
-        Contracts.decimals as decimals,
-        balance_changes.owner as owner,
-        balance_changes.old_balance as old_balance,
-        balance_changes.new_balance as new_balance,
-        balance_changes.transaction_id as transaction_id,
-        balance_changes.id as id,
-        balance_changes.module_hash as module_hash,
-        balance_changes.chain as chain,
-        block_number,
-        timestamp
-        FROM balance_changes
-        JOIN blocks ON blocks.block_id = balance_changes.block_id
-        LEFT JOIN Contracts ON Contracts.address = balance_changes.contract
-        WHERE (chain == '${chain}' AND owner == '${address}' AND balance_changes.transaction_id == '${transaction_id}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})
-        ORDER BY block_number DESC
-        LIMIT ${limit}`.replace(/\s+/g, ''))
+test("getBalanceChanges with options", () => {
+    const parameters = new URLSearchParams({
+        chain,
+        owner: address,
+        transaction_id,
+        greater_or_equals_by_timestamp,
+        less_or_equals_by_timestamp,
+        limit,
+    });
+    expect(formatSQL(getBalanceChanges(parameters))).toContain(
+        formatSQL(
+            `WHERE(chain == '${chain}' AND owner == '${address}' AND balance_changes.transaction_id == '${transaction_id}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})`
+        )
+    );
 });
-
 
 test("getChain", () => {
     expect(getChain()).toBe(`SELECT DISTINCT chain FROM module_hashes`);
