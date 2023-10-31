@@ -12,8 +12,8 @@ import {
 const chain = "eth";
 const address = "dac17f958d2ee523a2206206994597c13d831ec7";
 const limit = "1";
-const symbol = "USDT";
-const name = "Tether USD";
+const symbol = "usdt";
+const name = "tether usd";
 const greater_or_equals_by_timestamp = "1697587200";
 const less_or_equals_by_timestamp = "1697587100";
 const transaction_id =
@@ -65,7 +65,7 @@ test("getContracts with options", () => {
     });
     expect(formatSQL(getContracts(parameter))).toContain(
         formatSQL(
-            `WHERE(chain == '${chain}' AND address == '${address}' AND symbol == '${symbol}' AND name == '${name}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})`
+            `WHERE(chain == '${chain}' AND address == '${address}' AND LOWER(symbol) == '${symbol}' AND LOWER(name) == '${name}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})`
         )
     );
 });
@@ -140,7 +140,7 @@ test("getTotalSupply with options", () => {
     });
     expect(formatSQL(getTotalSupply(parameters))).toContain(
         formatSQL(
-            `WHERE(TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp}  AND symbol == '${symbol}' AND name == '${name}')`
+            `WHERE(TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp}  AND LOWER(symbol) == '${symbol}' AND LOWER(name) == '${name}')`
         )
     );
 });

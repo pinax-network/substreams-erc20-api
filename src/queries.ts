@@ -20,10 +20,10 @@ export function addTimestampBlockFilter(searchParams: URLSearchParams, where: an
 
 export function getTotalSupply(searchParams: URLSearchParams, example?: boolean) {
     // Params
-    const address = getAddress(searchParams, "address", false);
+    const address = getAddress(searchParams, "address", false)?.toLowerCase();
     const chain = searchParams.get("chain");
-    const symbol = searchParams.get("symbol");
-    const name = searchParams.get("name");
+    const symbol = searchParams.get("symbol")?.toLowerCase();
+    const name = searchParams.get("name")?.toLowerCase();
 
     // Query
     const table = 'TotalSupply'
@@ -56,8 +56,8 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
         // timestamp and block filter
         addTimestampBlockFilter(searchParams, where);
 
-        if (symbol) where.push(`symbol == '${symbol}'`);
-        if (name) where.push(`name == '${name}'`);
+        if (symbol) where.push(`LOWER(symbol) == '${symbol}'`);
+        if (name) where.push(`LOWER(name) == '${name}'`);
 
 
         // Join WHERE statements with AND
@@ -77,9 +77,9 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
 export function getContracts(searchParams: URLSearchParams, example?: boolean) {
     // Params
     const chain = searchParams.get("chain");
-    const address = getAddress(searchParams, "address", false);
-    const symbol = searchParams.get("symbol");
-    const name = searchParams.get("name");
+    const address = getAddress(searchParams, "address", false)?.toLowerCase();
+    const symbol = searchParams.get("symbol")?.toLowerCase();
+    const name = searchParams.get("name")?.toLowerCase();
 
     // Query
     const table = 'Contracts'
@@ -93,8 +93,8 @@ export function getContracts(searchParams: URLSearchParams, example?: boolean) {
         const where = [];
         if (chain) where.push(`chain == '${chain}'`);
         if (address) where.push(`address == '${address}'`);
-        if (symbol) where.push(`symbol == '${symbol}'`);
-        if (name) where.push(`name == '${name}'`);
+        if (symbol) where.push(`LOWER(symbol) == '${symbol}'`);
+        if (name) where.push(`LOWER(name) == '${name}'`);
 
         // timestamp and block filter
         addTimestampBlockFilter(searchParams, where);
@@ -114,9 +114,9 @@ export function getContracts(searchParams: URLSearchParams, example?: boolean) {
 
 export function getBalanceChanges(searchParams: URLSearchParams, example?: boolean) {
     const chain = searchParams.get("chain");
-    const contract = getAddress(searchParams, "contract", false);
-    const owner = getAddress(searchParams, "owner", false);
-    const transaction_id = searchParams.get("transaction_id");
+    const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
+    const owner = getAddress(searchParams, "owner", false)?.toLowerCase();
+    const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
     // SQL Query
     const table = 'balance_changes'
     const contractTable = 'Contracts';
