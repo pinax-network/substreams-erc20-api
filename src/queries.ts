@@ -18,7 +18,7 @@ export function addTimestampBlockFilter(searchParams: URLSearchParams, where: an
     }
 }
 
-export function getTotalSupply(searchParams: URLSearchParams) {
+export function getTotalSupply(searchParams: URLSearchParams, example?: boolean) {
     // Params
     const address = getAddress(searchParams, "address", false);
     const chain = searchParams.get("chain");
@@ -41,36 +41,40 @@ export function getTotalSupply(searchParams: URLSearchParams) {
     timestamp
     FROM ${table} `;
 
+
     // JOIN block table
     query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
     query += ` LEFT JOIN Contracts ON ${contractTable}.address = ${table}.address`;
-    // WHERE statements
-    const where = [];
+    if (!example) {
+        // WHERE statements
+        const where = [];
 
-    // equals
-    if (chain) where.push(`${table}.chain == '${chain}'`);
-    if (address) where.push(`${table}.address == '${address}'`);
+        // equals
+        if (chain) where.push(`${table}.chain == '${chain}'`);
+        if (address) where.push(`${table}.address == '${address}'`);
 
-    // timestamp and block filter
-    addTimestampBlockFilter(searchParams, where);
+        // timestamp and block filter
+        addTimestampBlockFilter(searchParams, where);
 
-    if (symbol) where.push(`symbol == '${symbol}'`);
-    if (name) where.push(`name == '${name}'`);
+        if (symbol) where.push(`symbol == '${symbol}'`);
+        if (name) where.push(`name == '${name}'`);
 
 
-    // Join WHERE statements with AND
-    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
+        // Join WHERE statements with AND
+        if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
-    // Sort and Limit
+        // Sort and Limit
+        const sort_by = searchParams.get("sort_by");
+        query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
+
+    }
     const limit = parseLimit(searchParams.get("limit"));
-    const sort_by = searchParams.get("sort_by");
-    query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
     query += ` LIMIT ${limit} `
 
     return query;
 }
 
-export function getContracts(searchParams: URLSearchParams) {
+export function getContracts(searchParams: URLSearchParams, example?: boolean) {
     // Params
     const chain = searchParams.get("chain");
     const address = getAddress(searchParams, "address", false);
@@ -81,31 +85,34 @@ export function getContracts(searchParams: URLSearchParams) {
     const table = 'Contracts'
     let query = `SELECT * FROM ${table} `
 
+
     // JOIN block table
     query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
+    if (!example) {
+        // WHERE statements
+        const where = [];
+        if (chain) where.push(`chain == '${chain}'`);
+        if (address) where.push(`address == '${address}'`);
+        if (symbol) where.push(`symbol == '${symbol}'`);
+        if (name) where.push(`name == '${name}'`);
 
-    // WHERE statements
-    const where = [];
-    if (chain) where.push(`chain == '${chain}'`);
-    if (address) where.push(`address == '${address}'`);
-    if (symbol) where.push(`symbol == '${symbol}'`);
-    if (name) where.push(`name == '${name}'`);
+        // timestamp and block filter
+        addTimestampBlockFilter(searchParams, where);
 
-    // timestamp and block filter
-    addTimestampBlockFilter(searchParams, where);
+        // Join WHERE statements with AND
+        if (where.length) query += ` WHERE (${where.join(' AND ')})`;
 
-    // Join WHERE statements with AND
-    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
+        // Sort and Limit
+        const sort_by = searchParams.get("sort_by");
+        query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
 
-    // Sort and Limit
+    }
     const limit = parseLimit(searchParams.get("limit"));
-    const sort_by = searchParams.get("sort_by");
-    query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
     query += ` LIMIT ${limit} `
     return query;
 }
 
-export function getBalanceChanges(searchParams: URLSearchParams) {
+export function getBalanceChanges(searchParams: URLSearchParams, example?: boolean) {
     const chain = searchParams.get("chain");
     const contract = getAddress(searchParams, "contract", false);
     const owner = getAddress(searchParams, "owner", false);
@@ -132,26 +139,29 @@ export function getBalanceChanges(searchParams: URLSearchParams) {
     // JOIN block table
     query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
     query += ` LEFT JOIN Contracts ON ${contractTable}.address = ${table}.contract`;
-    // WHERE statements
-    const where = [];
 
-    // equals
+    if (!example) {
+        // WHERE statements
+        const where = [];
 
-    if (chain) where.push(`chain == '${chain}'`);
-    if (owner) where.push(`owner == '${owner}'`);
-    if (contract) where.push(`contract == '${contract}'`);
-    if (transaction_id) where.push(`${table}.transaction_id == '${transaction_id}'`);
+        // equals
 
-    // timestamp and block filter
-    addTimestampBlockFilter(searchParams, where);
+        if (chain) where.push(`chain == '${chain}'`);
+        if (owner) where.push(`owner == '${owner}'`);
+        if (contract) where.push(`contract == '${contract}'`);
+        if (transaction_id) where.push(`${table}.transaction_id == '${transaction_id}'`);
 
-    // Join WHERE statements with AND
-    if (where.length) query += ` WHERE (${where.join(' AND ')})`;
+        // timestamp and block filter
+        addTimestampBlockFilter(searchParams, where);
 
-    // Sort and Limit
+        // Join WHERE statements with AND
+        if (where.length) query += ` WHERE (${where.join(' AND ')})`;
+
+        // Sort and Limit
+        const sort_by = searchParams.get("sort_by");
+        query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
+    }
     const limit = parseLimit(searchParams.get("limit"));
-    const sort_by = searchParams.get("sort_by");
-    query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
     query += ` LIMIT ${limit} `
     return query;
 }

@@ -5,7 +5,8 @@ import { OpenApiBuilder, SchemaObject, ExampleObject, ParameterObject } from "op
 import { config } from "../config.js";
 import { registry } from "../prometheus.js";
 import { supportedChainsQuery } from "./chains.js";
-
+import { makeQuery } from "../clickhouse/makeQuery.js";
+import { getBalanceChanges, getContracts, getTotalSupply } from "../queries.js";
 const TAGS = {
   MONITORING: "Monitoring",
   HEALTH: "Health",
@@ -15,20 +16,11 @@ const TAGS = {
 
 const arrayFilter = ["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"];
 
-
-
 const chains = await supportedChainsQuery();
-// const supply_example = (await makeQuery(await getTotalSupply( new URLSearchParams({limit: "1"})))).data;
-// const contract_example = (await makeQuery(await getContracts( new URLSearchParams({limit: "1"})))).data;
-// const balance_example = (await makeQuery(await getBalanceChanges( new URLSearchParams({limit: "1"})))).data;
+const supply_example = (await makeQuery(await getTotalSupply(new URLSearchParams({ limit: "2" }), true))).data;
+const contract_example = (await makeQuery(await getContracts(new URLSearchParams({ limit: "2" }), true))).data;
+const balance_example = (await makeQuery(await getBalanceChanges(new URLSearchParams({ limit: "2" }), true))).data;
 
-// TO-DO: make dynamic examples
-const supply_example = {};
-const contract_example = {};
-const balance_example = {};
-
-// TO-DO: apply timestamp filters to docs
-// https://github.com/pinax-network/substreams-erc20-api/issues/4
 const timestampSchema: SchemaObject = {
   anyOf: [
     { type: "number" },
