@@ -14,8 +14,8 @@ const TAGS = {
   DOCS: "Documentation",
 } as const;
 
-const arrayFilter = ["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"];
-
+const timestampExamplesArrayFilter = ["greater_or_equals_by_timestamp", "greater_by_timestamp", "less_or_equals_by_timestamp", "less_by_timestamp"];
+const blockExamplesArrayFilter = ["greater_or_equals_by_block", "greater_by_block", "less_or_equals_by_block", "less_by_block"];
 const chains = await supportedChainsQuery();
 const supply_example = (await makeQuery(await getTotalSupply(new URLSearchParams({ limit: "2" }), true))).data;
 const contract_example = (await makeQuery(await getContracts(new URLSearchParams({ limit: "2" }), true))).data;
@@ -59,7 +59,7 @@ const parameterLimit: ParameterObject = {
 }
 
 
-const timestampFilter = arrayFilter.map(name => {
+const timestampFilter = timestampExamplesArrayFilter.map(name => {
   return {
     name,
     in: "query",
@@ -70,7 +70,7 @@ const timestampFilter = arrayFilter.map(name => {
   } as ParameterObject
 })
 
-const blockFilter = arrayFilter.map(name => {
+const blockFilter = blockExamplesArrayFilter.map(name => {
   return {
     name,
     in: "query",
