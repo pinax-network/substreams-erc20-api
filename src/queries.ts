@@ -42,8 +42,7 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
     FROM ${table} `;
 
 
-    // JOIN block table
-    query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
+    // JOIN Contracts table
     query += ` LEFT JOIN Contracts ON ${contractTable}.address = ${table}.address`;
     if (!example) {
         // WHERE statements
@@ -86,8 +85,6 @@ export function getContracts(searchParams: URLSearchParams, example?: boolean) {
     let query = `SELECT * FROM ${table} `
 
 
-    // JOIN block table
-    query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
     if (!example) {
         // WHERE statements
         const where = [];
@@ -136,8 +133,6 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
     timestamp
     FROM ${table} `;
 
-    // JOIN block table
-    query += ` JOIN blocks ON blocks.block_id = ${table}.block_id`;
     query += ` LEFT JOIN Contracts ON ${contractTable}.address = ${table}.contract`;
 
     if (!example) {

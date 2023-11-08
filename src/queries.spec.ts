@@ -38,9 +38,6 @@ test("getContracts", () => {
         formatSQL(`SELECT * FROM Contracts`)
     );
 
-    expect(formatSQL(getContracts(parameter))).toContain(
-        formatSQL(`JOIN blocks ON blocks.block_id = Contracts.block_id`)
-    );
 
     expect(formatSQL(getContracts(parameter))).toContain(
         formatSQL(`WHERE (chain == '${chain}' AND address == '${address}')`)
@@ -107,9 +104,6 @@ test("getTotalSupply", () => {
         formatSQL(`FROM TotalSupply`)
     );
 
-    expect(formatSQL(getTotalSupply(parameters))).toContain(
-        formatSQL(`JOIN blocks ON blocks.block_id = TotalSupply.block_id`)
-    );
 
     expect(formatSQL(getTotalSupply(parameters))).toContain(
         formatSQL(`LEFT JOIN Contracts ON Contracts.address = TotalSupply.address`)
@@ -167,9 +161,6 @@ test("getBalanceChabge", () => {
         formatSQL(`FROM balance_changes`)
     );
 
-    expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(`JOIN blocks ON blocks.block_id = balance_changes.block_id`)
-    );
 
     expect(formatSQL(getBalanceChanges(parameters))).toContain(
         formatSQL(
