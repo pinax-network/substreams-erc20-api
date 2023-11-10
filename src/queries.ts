@@ -11,7 +11,7 @@ export function addTimestampBlockFilter(searchParams: URLSearchParams, where: an
         ["less", "<"],
     ]
     for (const [key, operator] of operators) {
-        const block_number = searchParams.get(`${key}_by_block_number`);
+        const block_number = searchParams.get(`${key}_by_block`);
         const timestamp = parseTimestamp(searchParams.get(`${key}_by_timestamp`));
         if (block_number) where.push(`block_number ${operator} ${block_number}`);
         if (timestamp) where.push(`toUnixTimestamp(timestamp) ${operator} ${timestamp}`);
@@ -72,6 +72,8 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
 
     return query;
 }
+
+
 
 export function getContracts(searchParams: URLSearchParams, example?: boolean) {
     // Params
@@ -156,10 +158,48 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
         const sort_by = searchParams.get("sort_by");
         query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
     }
-    const limit = parseLimit(searchParams.get("limit"));
+    const limit = parseLimit(searchParams.get("limit"), 100);
     query += ` LIMIT ${limit} `
     return query;
 }
+
+
+export function getHolders(searchParams: URLSearchParams, example?: boolean) {
+    const chain = searchParams.get("chain");
+    const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
+    const owner = getAddress(searchParams, "owner", false)?.toLowerCase();
+    const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
+    // SQL Query
+    const table = 'balance_changes'
+    let query = `SELECT
+    owner
+    FROM ${table} `;
+    if (!example) {
+        // WHERE statements
+        const where = [];
+
+        // equals
+
+        if (chain) where.push(`chain == '${chain}'`);
+        if (contract) where.push(`contract == '${contract}'`);
+        where.push(`CAST(new_balance as int) > 0`);
+
+        // timestamp and block filter
+        addTimestampBlockFilter(searchParams, where);
+
+        // Join WHERE statements with AND
+        if (where.length) query += ` WHERE (${where.join(' AND ')})`;
+
+        //Group BY holder
+        query += ` GROUP BY owner`
+
+    }
+    const limit = parseLimit(searchParams.get("limit"), 100);
+    if (limit) query += ` LIMIT ${limit}`;
+
+    return query;
+}
+
 
 export function getChain() {
     return `SELECT DISTINCT chain FROM module_hashes`;

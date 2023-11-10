@@ -7,6 +7,7 @@ import {
     getTotalSupply,
     getBalanceChanges,
     addTimestampBlockFilter,
+    getHolders,
 } from "./queries.js";
 
 const chain = "eth";
@@ -74,8 +75,8 @@ test("addTimestampBlockFilter", () => {
         address: address,
         greater_or_equals_by_timestamp: "1697587200",
         less_or_equals_by_timestamp: "1697587100",
-        greater_or_equals_by_block_number: "123",
-        less_or_equals_by_block_number: "123",
+        greater_or_equals_by_block: "123",
+        less_or_equals_by_block: "123",
     });
     addTimestampBlockFilter(searchParams, where);
     expect(where).toContain("block_number >= 123");
@@ -134,13 +135,13 @@ test("getTotalSupply with options", () => {
     });
     expect(formatSQL(getTotalSupply(parameters))).toContain(
         formatSQL(
-            `WHERE(TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp}  AND LOWER(symbol) == '${symbol}' AND LOWER(name) == '${name}')`
+            `WHERE(TotalSupply.chain == '${chain}' AND TotalSupply.address == '${address}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp}  AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp}  AND LOWER(symbol) == '${symbol}' AND LOWER(name) == '${name}')`
         )
     );
 });
 
 // Test Balance Change
-test("getBalanceChabge", () => {
+test("getBalanceChange", () => {
     const parameters = new URLSearchParams({ chain, owner: address });
     expect(formatSQL(getBalanceChanges(parameters))).toContain(
         formatSQL(`SELECT balance_changes.contract as contract,
@@ -177,7 +178,7 @@ test("getBalanceChabge", () => {
     );
 
     expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(`LIMIT 1`)
+        formatSQL(`LIMIT 100`)
     );
 });
 
@@ -196,6 +197,32 @@ test("getBalanceChanges with options", () => {
         )
     );
 });
+
+
+// Test getHolders
+test("getHolders", () => {
+    const parameters = new URLSearchParams({ chain, contract: address });
+    expect(formatSQL(getHolders(parameters))).toContain(
+        formatSQL(`SELECT owner`)
+    );
+    expect(formatSQL(getHolders(parameters))).toContain(
+        formatSQL(`FROM balance_changes`)
+    );
+
+
+    expect(formatSQL(getHolders(parameters))).toContain(
+        formatSQL(`WHERE (chain == '${chain}' AND contract == '${address}' AND CAST(new_balance as int) > 0)`)
+    );
+
+    expect(formatSQL(getHolders(parameters))).toContain(
+        formatSQL(`GROUP BY owner`)
+    );
+
+    expect(formatSQL(getHolders(parameters))).toContain(
+        formatSQL(`LIMIT 100`)
+    );
+});
+
 
 test("getChain", () => {
     expect(getChain()).toBe(`SELECT DISTINCT chain FROM module_hashes`);

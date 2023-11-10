@@ -6,7 +6,7 @@ import { config } from "../config.js";
 import { registry } from "../prometheus.js";
 import { supportedChainsQuery } from "./chains.js";
 import { makeQuery } from "../clickhouse/makeQuery.js";
-import { getBalanceChanges, getContracts, getTotalSupply } from "../queries.js";
+import { getBalanceChanges, getContracts, getHolders, getTotalSupply } from "../queries.js";
 const TAGS = {
   MONITORING: "Monitoring",
   HEALTH: "Health",
@@ -20,7 +20,7 @@ const chains = await supportedChainsQuery();
 const supply_example = (await makeQuery(await getTotalSupply(new URLSearchParams({ limit: "2" }), true))).data;
 const contract_example = (await makeQuery(await getContracts(new URLSearchParams({ limit: "2" }), true))).data;
 const balance_example = (await makeQuery(await getBalanceChanges(new URLSearchParams({ limit: "2" }), true))).data;
-
+const holders_example = (await makeQuery(await getHolders(new URLSearchParams({ limit: "5" }), true))).data;
 const timestampSchema: SchemaObject = {
   anyOf: [
     { type: "number" },
@@ -159,6 +159,22 @@ export default new OpenApiBuilder()
       ],
       responses: {
         200: { description: "Array of balance changes", content: { "application/json": { example: balance_example, schema: { type: "array" } } } },
+        400: { description: "Bad request" },
+      },
+    },
+  }).addPath("/holders", {
+    get: {
+      tags: [TAGS.USAGE],
+      summary: "ERC20 holders",
+      parameters: [
+        parameterChain,
+        parameterString("contract"),
+        ...timestampFilter,
+        ...blockFilter,
+        parameterLimit,
+      ],
+      responses: {
+        200: { description: "Array of holders", content: { "application/json": { example: holders_example, schema: { type: "array" } } } },
         400: { description: "Bad request" },
       },
     },
