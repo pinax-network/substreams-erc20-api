@@ -6,16 +6,17 @@
 
 ## REST API
 
-| Pathname              | Description                                             |
-| ----------------------|-------------------------------------------------------- |
-| GET `/`               | [Swagger UI](https://swagger.io/resources/open-api/)
-| GET `/chains`         | Available `chains`
-| GET `/supply`         | ERC20 total supply
-| GET `/contract`       | ERC20 contract information (name,symbol,decimals)
-| GET `/balance`        | ERC20 balance changes
-| GET `/health`         | Health check
-| GET `/metrics`        | Prometheus metrics
-| GET `/openapi`        | [OpenAPI v3 JSON](https://spec.openapis.org/oas/v3.0.0)
+| Pathname        | Description                                             |
+| --------------- | ------------------------------------------------------- |
+| GET `/`         | [Swagger UI](https://swagger.io/resources/open-api/)    |
+| GET `/chains`   | Available `chains`                                      |
+| GET `/supply`   | ERC20 total supply                                      |
+| GET `/contract` | ERC20 contract information (name,symbol,decimals)       |
+| GET `/balance`  | ERC20 balance changes                                   |
+| GET `/holders`  | ERC20 contract's holders                                |
+| GET `/health`   | Health check                                            |
+| GET `/metrics`  | Prometheus metrics                                      |
+| GET `/openapi`  | [OpenAPI v3 JSON](https://spec.openapis.org/oas/v3.0.0) |
 
 ## Requirements
 
