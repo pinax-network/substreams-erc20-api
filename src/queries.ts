@@ -172,11 +172,22 @@ export function getHolders(searchParams: URLSearchParams, example?: boolean) {
     // SQL Query
     const table = 'balance_changes'
     let query = `SELECT
-    owner
+    owner,
+    new_balance,
+    block_number
     FROM ${table} `;
     if (!example) {
         // WHERE statements
-        const where = [];
+        const where: any = [];
+
+        //Get holders balance
+        let holderWhereQuery = `(owner,block_number) IN (SELECT owner, max(block_number) FROM ${table}`;
+        const whereHolder: any = [];
+        addTimestampBlockFilter(searchParams, whereHolder);
+        if (whereHolder.length) holderWhereQuery += ` WHERE(${whereHolder.join(' AND ')})`;
+        holderWhereQuery += ` GROUP BY owner)`;
+
+        where.push(holderWhereQuery);
 
         // equals
 
@@ -188,14 +199,12 @@ export function getHolders(searchParams: URLSearchParams, example?: boolean) {
         addTimestampBlockFilter(searchParams, where);
 
         // Join WHERE statements with AND
-        if (where.length) query += ` WHERE (${where.join(' AND ')})`;
-
-        //Group BY holder
-        query += ` GROUP BY owner`
+        if (where.length) query += ` WHERE(${where.join(' AND ')})`;
 
     }
+
     const limit = parseLimit(searchParams.get("limit"), 100);
-    if (limit) query += ` LIMIT ${limit}`;
+    if (limit) query += ` LIMIT ${limit} `;
 
     return query;
 }
