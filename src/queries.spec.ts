@@ -211,7 +211,7 @@ test("getHolders", () => {
 
 
     expect(formatSQL(getHolders(parameters))).toContain(
-        formatSQL(`WHERE (chain == '${chain}' AND contract == '${address}' AND CAST(new_balance as int) > 0)`)
+        formatSQL(`WHERE ((owner,block_number)IN(SELECTowner,max(block_number)FROMbalance_changesGROUPBYowner) AND chain == '${chain}' AND contract == '${address}' AND CAST(new_balance as int) > 0)`)
     );
 
     expect(formatSQL(getHolders(parameters))).toContain(
