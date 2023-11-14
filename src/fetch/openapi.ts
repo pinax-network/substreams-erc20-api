@@ -58,6 +58,14 @@ const parameterLimit: ParameterObject = {
   schema: { type: "number", maximum: config.maxLimit, minimum: 1 },
 }
 
+const parameterOffset: ParameterObject = {
+  name: "offset",
+  in: "query",
+  description: "Used to offset data. Combined with limit can be used for pagination.",
+  required: false,
+  schema: { type: "number", minimum: 1 },
+}
+
 
 const timestampFilter = timestampExamplesArrayFilter.map(name => {
   return {
@@ -118,6 +126,7 @@ export default new OpenApiBuilder()
         ...timestampFilter,
         ...blockFilter,
         parameterLimit,
+        parameterOffset,
       ],
       responses: {
         200: { description: "Array of supply", content: { "application/json": { example: supply_example, schema: { type: "array" } } } },
@@ -137,6 +146,7 @@ export default new OpenApiBuilder()
         ...timestampFilter,
         ...blockFilter,
         parameterLimit,
+        parameterOffset,
       ],
       responses: {
         200: { description: "Array of contracts", content: { "application/json": { example: contract_example, schema: { type: "array" } } } },
@@ -156,6 +166,7 @@ export default new OpenApiBuilder()
         ...timestampFilter,
         ...blockFilter,
         parameterLimit,
+        parameterOffset,
       ],
       responses: {
         200: { description: "Array of balance changes", content: { "application/json": { example: balance_example, schema: { type: "array" } } } },
@@ -172,6 +183,7 @@ export default new OpenApiBuilder()
         ...timestampFilter,
         ...blockFilter,
         parameterLimit,
+        parameterOffset,
       ],
       responses: {
         200: { description: "Array of holders", content: { "application/json": { example: holders_example, schema: { type: "array" } } } },

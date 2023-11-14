@@ -69,7 +69,8 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
     }
     const limit = parseLimit(searchParams.get("limit"));
     query += ` LIMIT ${limit} `
-
+    const offset = searchParams.get("offset");
+    if (offset) query += ` OFFSET ${offset} `
     return query;
 }
 
@@ -108,6 +109,8 @@ export function getContracts(searchParams: URLSearchParams, example?: boolean) {
     }
     const limit = parseLimit(searchParams.get("limit"));
     query += ` LIMIT ${limit} `
+    const offset = searchParams.get("offset");
+    if (offset) query += ` OFFSET ${offset} `
     return query;
 }
 
@@ -160,6 +163,8 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
     }
     const limit = parseLimit(searchParams.get("limit"), 100);
     query += ` LIMIT ${limit} `
+    const offset = searchParams.get("offset");
+    if (offset) query += ` OFFSET ${offset} `
     return query;
 }
 
@@ -205,7 +210,8 @@ export function getHolders(searchParams: URLSearchParams, example?: boolean) {
 
     const limit = parseLimit(searchParams.get("limit"), 100);
     if (limit) query += ` LIMIT ${limit} `;
-
+    const offset = searchParams.get("offset");
+    if (offset) query += ` OFFSET ${offset} `
     return query;
 }
 
