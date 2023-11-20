@@ -23,8 +23,10 @@ const supply_example = (await makeQuery(await getTotalSupply(new URLSearchParams
 const contract_example = (await makeQuery(await getContracts(new URLSearchParams({ limit: "2" }), true))).data;
 const balance_example = (await makeQuery(await getBalanceChanges(new URLSearchParams({ limit: "2" }), true))).data;
 const holders_example = (await makeQuery(await getHolders(new URLSearchParams({ limit: "5" }), true))).data;
-const transfers_example = (await makeQuery(await getTransfers(new URLSearchParams({ limit: "5" }), true))).data;
-const approvals_example = (await makeQuery(await getApprovals(new URLSearchParams({ limit: "5" }), true))).data;
+// const transfers_example = (await makeQuery(await getTransfers(new URLSearchParams({ limit: "5" }), true))).data;
+// const approvals_example = (await makeQuery(await getApprovals(new URLSearchParams({ limit: "5" }), true))).data;
+const transfers_example = {};
+const approvals_example = {};
 
 const timestampSchema: SchemaObject = {
   anyOf: [
@@ -210,28 +212,30 @@ export default new OpenApiBuilder()
         400: { description: "Bad request" },
       },
     },
-  }).addPath("/approvals", {
-    get: {
-      tags: [TAGS.USAGE],
-      summary: "ERC20 Approvals",
-      parameters: [
-        parameterChain,
-        parameterString("contract"),
-        parameterString("owner"),
-        parameterString("spender"),
-        parameterString("transaction_id"),
-        ...amountFilter,
-        ...timestampFilter,
-        ...blockFilter,
-        parameterLimit,
-        parameterOffset,
-      ],
-      responses: {
-        200: { description: "Array of supply", content: { "application/json": { example: approvals_example, schema: { type: "array" } } } },
-        400: { description: "Bad request" },
-      },
-    },
-  }).addPath("/holders", {
+  })
+  // .addPath("/approvals", {
+  //   get: {
+  //     tags: [TAGS.USAGE],
+  //     summary: "ERC20 Approvals",
+  //     parameters: [
+  //       parameterChain,
+  //       parameterString("contract"),
+  //       parameterString("owner"),
+  //       parameterString("spender"),
+  //       parameterString("transaction_id"),
+  //       ...amountFilter,
+  //       ...timestampFilter,
+  //       ...blockFilter,
+  //       parameterLimit,
+  //       parameterOffset,
+  //     ],
+  //     responses: {
+  //       200: { description: "Array of supply", content: { "application/json": { example: approvals_example, schema: { type: "array" } } } },
+  //       400: { description: "Bad request" },
+  //     },
+  //   },
+  // })
+  .addPath("/holders", {
     get: {
       tags: [TAGS.USAGE],
       summary: "ERC20 holders",
