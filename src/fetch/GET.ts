@@ -10,6 +10,8 @@ import * as prometheus from "../prometheus.js";
 import { logger } from "../logger.js";
 import swaggerHtml from "../../swagger/index.html"
 import swaggerFavicon from "../../swagger/favicon.png"
+import transfers from "./transfers.js";
+import approvals from "./approvals.js";
 
 export default async function (req: Request) {
     const { pathname } = new URL(req.url);
@@ -23,6 +25,8 @@ export default async function (req: Request) {
     if (pathname === "/supply") return supply(req);
     if (pathname === "/balance") return balance(req);
     if (pathname === "/contract") return contract(req);
+    if (pathname === "/transfers") return transfers(req);
+    if (pathname === "/approvals") return approvals(req);
     if (pathname === "/holders") return holders(req);
     logger.warn(`Not found: ${pathname}`);
     prometheus.request_error.inc({ pathname, status: 404 });

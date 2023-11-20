@@ -8,6 +8,9 @@ import {
     getBalanceChanges,
     addTimestampBlockFilter,
     getHolders,
+    getTransfers,
+    getApprovals,
+    addAmountFilter,
 } from "./queries.js";
 
 const chain = "eth";
@@ -84,6 +87,24 @@ test("addTimestampBlockFilter", () => {
     expect(where).toContain("toUnixTimestamp(timestamp) >= 1697587200");
     expect(where).toContain("toUnixTimestamp(timestamp) <= 1697587100");
 });
+
+//Test Amount Filter
+test("addAmountFilter", () => {
+    let where: any[] = [];
+    const searchParams = new URLSearchParams({
+        address: address,
+        amount_greater_or_equals: "123123",
+        amount_less_or_equals: "123123",
+        amount_greater: "2323",
+        amount_less: "2332",
+    });
+    addAmountFilter(searchParams, where);
+    expect(where).toContain("amount >= 123123");
+    expect(where).toContain("amount <= 123123");
+    expect(where).toContain("amount > 2323");
+    expect(where).toContain("amount < 2332");
+});
+
 
 // Test TotalSupply
 test("getTotalSupply", () => {
@@ -198,6 +219,71 @@ test("getBalanceChanges with options", () => {
     );
 });
 
+// Test getTransfers
+
+test("getTransfers", () => {
+    const parameters = new URLSearchParams({ chain, contract: address, from: address, to: address, transaction_id });
+    expect(formatSQL(getTransfers(parameters))).toContain(
+        formatSQL(`SELECT 
+        address as contract,
+        from,
+        to,
+        value as amount,
+        transaction as transaction_id,
+        block_number,
+        timestamp,
+        chain`)
+    );
+    expect(formatSQL(getTransfers(parameters))).toContain(
+        formatSQL(`FROM Transfers`)
+    );
+
+
+    expect(formatSQL(getTransfers(parameters))).toContain(
+        formatSQL(`WHERE(Transfers.chain == '${chain}' AND Transfers.address == '${address}' AND Transfers.from == '${address}' AND Transfers.to == '${address}' AND Transfers.transaction == '${transaction_id}')`)
+    );
+
+    expect(formatSQL(getTransfers(parameters))).toContain(
+        formatSQL(`ORDER BY block_number DESC`)
+    );
+
+    expect(formatSQL(getTransfers(parameters))).toContain(
+        formatSQL(`LIMIT 100`)
+    );
+});
+
+// Test Approvals
+
+test("getApprovals", () => {
+    const parameters = new URLSearchParams({ chain, contract: address, owner: address, sender: address, transaction_id });
+    expect(formatSQL(getApprovals(parameters))).toContain(
+        formatSQL(`SELECT 
+        address as contract,
+        owner,
+        spender,
+        value as amount,
+        transaction as transaction_id,
+        block_number,
+        timestamp,
+        chain`)
+    );
+    expect(formatSQL(getApprovals(parameters))).toContain(
+        formatSQL(`FROM Approvals`)
+    );
+
+
+    expect(formatSQL(getApprovals(parameters))).toContain(
+        formatSQL(`WHERE(Approvals.chain == '${chain}' AND Approvals.address == '${address}' AND Approvals.owner == '${address}' AND Approvals.sender == '${address}' AND Approvals.transaction == '${transaction_id}')`)
+    );
+
+    expect(formatSQL(getApprovals(parameters))).toContain(
+        formatSQL(`ORDER BY block_number DESC`)
+    );
+
+    expect(formatSQL(getApprovals(parameters))).toContain(
+        formatSQL(`LIMIT 100`)
+    );
+});
 
 // Test getHolders
 test("getHolders", () => {
