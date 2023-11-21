@@ -214,7 +214,7 @@ test("getBalanceChanges with options", () => {
     });
     expect(formatSQL(getBalanceChanges(parameters))).toContain(
         formatSQL(
-            `WHERE(chain == '${chain}' AND owner == '${address}' AND balance_changes.transaction_id == '${transaction_id}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})`
+            `WHERE(chain == '${chain}' AND owner == '${address}' AND toUnixTimestamp(timestamp) >= ${greater_or_equals_by_timestamp} AND toUnixTimestamp(timestamp) <= ${less_or_equals_by_timestamp})`
         )
     );
 });
@@ -248,39 +248,6 @@ test("getTransfers", () => {
     );
 
     expect(formatSQL(getTransfers(parameters))).toContain(
-        formatSQL(`LIMIT 100`)
-    );
-});
-
-// Test Approvals
-
-test("getApprovals", () => {
-    const parameters = new URLSearchParams({ chain, contract: address, owner: address, sender: address, transaction_id });
-    expect(formatSQL(getApprovals(parameters))).toContain(
-        formatSQL(`SELECT 
-        address as contract,
-        owner,
-        spender,
-        value as amount,
-        transaction as transaction_id,
-        block_number,
-        timestamp,
-        chain`)
-    );
-    expect(formatSQL(getApprovals(parameters))).toContain(
-        formatSQL(`FROM Approvals`)
-    );
-
-
-    expect(formatSQL(getApprovals(parameters))).toContain(
-        formatSQL(`WHERE(Approvals.chain == '${chain}' AND Approvals.address == '${address}' AND Approvals.owner == '${address}' AND Approvals.sender == '${address}' AND Approvals.transaction == '${transaction_id}')`)
-    );
-
-    expect(formatSQL(getApprovals(parameters))).toContain(
-        formatSQL(`ORDER BY block_number DESC`)
-    );
-
-    expect(formatSQL(getApprovals(parameters))).toContain(
         formatSQL(`LIMIT 100`)
     );
 });

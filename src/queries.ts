@@ -132,7 +132,7 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
     const chain = searchParams.get("chain");
     const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
     const owner = getAddress(searchParams, "owner", false)?.toLowerCase();
-    const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
+
     // SQL Query
     const table = 'balance_changes'
     const contractTable = 'Contracts';
@@ -163,7 +163,6 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
         if (chain) where.push(`chain == '${chain}'`);
         if (owner) where.push(`owner == '${owner}'`);
         if (contract) where.push(`contract == '${contract}'`);
-        if (transaction_id) where.push(`${table}.transaction_id == '${transaction_id}'`);
 
         // timestamp and block filter
         addTimestampBlockFilter(searchParams, where);
@@ -281,62 +280,6 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
     if (offset) query += ` OFFSET ${offset} `
     return query;
 }
-
-
-export function getApprovals(searchParams: URLSearchParams, example?: boolean) {
-    // Params
-    const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
-    const owner = getAddress(searchParams, "owner", false)?.toLowerCase();
-    const sender = getAddress(searchParams, "sender", false)?.toLowerCase();
-    const chain = searchParams.get("chain");
-    const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
-    const amount = searchParams.get("amount");
-    // Query
-    const table = 'Approvals'
-
-    let query = `SELECT 
-    address as contract,
-    owner,
-    spender,
-    value as amount,
-    transaction as transaction_id,
-    block_number,
-    timestamp,
-    chain
-    FROM ${table} `;
-
-    if (!example) {
-        // WHERE statements
-        const where = [];
-
-        // equals
-        if (chain) where.push(`${table}.chain == '${chain}'`);
-        if (contract) where.push(`${table}.address == '${contract}'`);
-        if (owner) where.push(`${table}.owner == '${owner}'`);
-        if (sender) where.push(`${table}.sender == '${sender}'`);
-        if (transaction_id) where.push(`${table}.transaction == '${transaction_id}'`);
-
-        //add amount filter
-        addAmountFilter(searchParams, where);
-        // timestamp and block filter
-        addTimestampBlockFilter(searchParams, where);
-
-        // Join WHERE statements with AND
-        if (where.length) query += ` WHERE (${where.join(' AND ')})`;
-
-        // Sort and Limit
-        const sort_by = searchParams.get("sort_by");
-        query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
-
-    }
-    const limit = parseLimit(searchParams.get("limit"), 100);
-    query += ` LIMIT ${limit} `
-    const offset = searchParams.get("offset");
-    if (offset) query += ` OFFSET ${offset} `
-    return query;
-}
-
-
 
 export function getChain() {
     return `SELECT DISTINCT chain FROM module_hashes`;
