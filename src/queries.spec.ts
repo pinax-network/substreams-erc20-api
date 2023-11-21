@@ -9,7 +9,6 @@ import {
     addTimestampBlockFilter,
     getHolders,
     getTransfers,
-    getApprovals,
     addAmountFilter,
 } from "./queries.js";
 

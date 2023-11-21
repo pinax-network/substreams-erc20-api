@@ -18,6 +18,8 @@ const timestampExamplesArrayFilter = ["greater_or_equals_by_timestamp", "greater
 const blockExamplesArrayFilter = ["greater_or_equals_by_block", "greater_by_block", "less_or_equals_by_block", "less_by_block"];
 const amountExamplesArrayFilter = ["amount_greater_or_equals", "amount_greater", "amount_less_or_equals", "amount_less"];
 
+
+
 const chains = await supportedChainsQuery();
 const supply_example = (await makeQuery(await getTotalSupply(new URLSearchParams({ limit: "2" }), true))).data;
 const contract_example = (await makeQuery(await getContracts(new URLSearchParams({ limit: "2" }), true))).data;
