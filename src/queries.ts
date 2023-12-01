@@ -71,6 +71,11 @@ function balance_changes_contract_query(table: string) {
 
 
 
+
+
+
+
+
 export function getTotalSupply(searchParams: URLSearchParams, example?: boolean) {
     // Params
     const address = getAddress(searchParams, "address", false)?.toLowerCase();
@@ -181,11 +186,11 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
 
     // SQL Query
     table = 'BalanceChange'
-    contractTable = 'Contracts';
+
 
     if (contract && owner) query += balance_changes_owner_contract_query(mvOwnerTable);
-    if (!contract && owner) query += balance_changes_owner_query(mvContractTable);
-    if (contract && !owner) query += balance_changes_contract_query(mvContractTable);
+    else if (!contract && owner) query += balance_changes_owner_query(mvContractTable);
+    else if (contract && !owner) query += balance_changes_contract_query(mvContractTable);
 
     if (!example) {
         // WHERE statements
@@ -258,15 +263,19 @@ export function getHolders(searchParams: URLSearchParams, example?: boolean) {
 }
 
 export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
-    // Params
+
     const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
     const from = getAddress(searchParams, "from", false)?.toLowerCase();
     const to = getAddress(searchParams, "to", false)?.toLowerCase();
     const chain = searchParams.get("chain");
     const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
     const amount = searchParams.get("amount");
-    // Query
-    const table = 'Transfers'
+
+
+    // SQL Query
+    let mvFromTable = "mv_transfers_from"
+    let mvToTable = "mv_transfers_to"
+    let mvContractTable = "mv_transfers_contract"
 
     let query = `SELECT
     address as contract,
@@ -276,19 +285,24 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
         transaction as transaction_id,
         block_number,
         timestamp,
-        chain
-    FROM ${table} `;
+        chain`
+
+    if (contract) query += ` FROM ${mvContractTable}`
+    else if (!contract && from && !to) query += ` FROM ${mvFromTable}`
+    else if (!contract && !from && to) query += ` FROM ${mvToTable}`
+    else if (!contract && from && to) query += ` FROM ${mvFromTable}`
+
 
     if (!example) {
         // WHERE statements
         const where = [];
 
         // equals
-        if (chain) where.push(`${table}.chain == '${chain}'`);
-        if (contract) where.push(`${table}.address == '${contract}'`);
-        if (from) where.push(`${table}.from == '${from}'`);
-        if (to) where.push(`${table}.to == '${to}'`);
-        if (transaction_id) where.push(`${table}.transaction == '${transaction_id}'`);
+        if (chain) where.push(`chain == '${chain}'`);
+        if (contract) where.push(`address == '${contract}'`);
+        if (from) where.push(`from == '${from}'`);
+        if (to) where.push(`to == '${to}'`);
+        if (transaction_id) where.push(`transaction == '${transaction_id}'`);
 
         //add amount filter
         addAmountFilter(searchParams, where);
@@ -297,12 +311,11 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
 
         // Join WHERE statements with AND
         if (where.length) query += ` WHERE(${where.join(' AND ')})`;
-
-        // Sort and Limit
-        const sort_by = searchParams.get("sort_by");
-        query += ` ORDER BY block_number ${sort_by ?? DEFAULT_SORT_BY} `
-
+        //add ORDER BY and GROUP BY
+        query += ` ORDER BY timestamp DESC`
     }
+
+    //ADD limit
     const limit = parseLimit(searchParams.get("limit"), 100);
     query += ` LIMIT ${limit} `
     const offset = searchParams.get("offset");

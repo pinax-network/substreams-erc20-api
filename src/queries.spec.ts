@@ -162,43 +162,68 @@ test("getTotalSupply with options", () => {
 
 // Test Balance Change
 test("getBalanceChange", () => {
-    const parameters = new URLSearchParams({ chain, owner: address });
-    expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(`SELECT balance_changes.contract as contract,
-        Contracts.name as name,
-        Contracts.symbol as symbol,
-        Contracts.decimals as decimals,
-        balance_changes.owner as owner,
-        balance_changes.old_balance as old_balance,
-        balance_changes.new_balance as new_balance,
-        balance_changes.transaction_id as transaction_id,
-        balance_changes.id as id,
-        balance_changes.module_hash as module_hash,
-        balance_changes.chain as chain,
-        block_number,
-        timestamp`)
+    const parameters1 = new URLSearchParams({ chain, owner: address, contract: address });
+    const parameters2 = new URLSearchParams({ chain, owner: address });
+    const parameters3 = new URLSearchParams({ chain, contract: address });
+
+    expect(formatSQL(getBalanceChanges(parameters1))).toContain(
+        formatSQL(`SELECT
+        contract as contract,
+        owner as owner,
+        newBalance as balance,
+        toDateTime(timestamp) as timestamp,
+        transaction as transaction_id,
+        chain as chain,
+        block_number`)
     );
-    expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(`FROM balance_changes`)
+    expect(formatSQL(getBalanceChanges(parameters2))).toContain(
+        formatSQL(`SELECT
+        owner,
+        contract,
+        toDateTime(last_value(timestamp)) AS timestamp,
+        last_value(newBalance) AS balance`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters3))).toContain(
+        formatSQL(`SELECT
+    owner,
+    contract,
+    toDateTime(last_value(timestamp)) as timestamp,
+    last_value(newBalance) as balance`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters1))).toContain(
+        formatSQL(`FROM mv_balance_changes_owner`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters2))).toContain(
+        formatSQL(`FROM mv_balance_changes_contract`)
+    );
+
+    expect(formatSQL(getBalanceChanges(parameters3))).toContain(
+        formatSQL(`FROM mv_balance_changes_contract`)
     );
 
 
-    expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(
-            `LEFT JOIN Contracts ON Contracts.address = balance_changes.contract`
-        )
+    expect(formatSQL(getBalanceChanges(parameters1))).toContain(
+        formatSQL(`WHERE(chain == '${chain}' AND owner == '${address}' AND contract == '${address}')`)
     );
 
-    expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(`WHERE(chain == '${chain}' AND owner == '${address}')`)
+    expect(formatSQL(getBalanceChanges(parameters1))).toContain(
+        formatSQL(`ORDER BY timestamp DESC`)
     );
 
-    expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(`ORDER BY block_number DESC`)
+    expect(formatSQL(getBalanceChanges(parameters2))).toContain(
+        formatSQL(`GROUP BY (contract, owner) ORDER BY timestamp DESC`)
     );
 
-    expect(formatSQL(getBalanceChanges(parameters))).toContain(
-        formatSQL(`LIMIT 100`)
+    expect(formatSQL(getBalanceChanges(parameters3))).toContain(
+        formatSQL(`GROUP BY (contract, owner) ORDER BY timestamp DESC`)
+    );
+
+
+    expect(formatSQL(getBalanceChanges(parameters1))).toContain(
+        formatSQL(`LIMIT 1`)
     );
 });
 
@@ -221,32 +246,52 @@ test("getBalanceChanges with options", () => {
 // Test getTransfers
 
 test("getTransfers", () => {
-    const parameters = new URLSearchParams({ chain, contract: address, from: address, to: address, transaction_id });
-    expect(formatSQL(getTransfers(parameters))).toContain(
-        formatSQL(`SELECT 
+    const parameters1 = new URLSearchParams({ chain, contract: address });
+    const parameters2 = new URLSearchParams({ chain, from: address });
+    const parameters3 = new URLSearchParams({ chain, to: address });
+    const parameters4 = new URLSearchParams({ chain, from: address, to: address });
+    const parameters5 = new URLSearchParams({ chain, contract: address, from: address, to: address, transaction_id });
+    expect(formatSQL(getTransfers(parameters1))).toContain(
+        formatSQL(`SELECT
         address as contract,
-        from,
-        to,
-        value as amount,
-        transaction as transaction_id,
-        block_number,
-        timestamp,
-        chain`)
+            from,
+            to,
+            value as amount,
+            transaction as transaction_id,
+            block_number,
+            timestamp,
+            chain`)
+
     );
-    expect(formatSQL(getTransfers(parameters))).toContain(
-        formatSQL(`FROM Transfers`)
+    expect(formatSQL(getTransfers(parameters1))).toContain(
+        formatSQL(`FROM mv_transfers_contract`)
+    );
+
+    expect(formatSQL(getTransfers(parameters2))).toContain(
+        formatSQL(`FROM mv_transfers_from`)
+    );
+
+    expect(formatSQL(getTransfers(parameters3))).toContain(
+        formatSQL(`FROM mv_transfers_to`)
+    );
+
+    expect(formatSQL(getTransfers(parameters4))).toContain(
+        formatSQL(`FROM mv_transfers_from`)
     );
 
 
-    expect(formatSQL(getTransfers(parameters))).toContain(
-        formatSQL(`WHERE(Transfers.chain == '${chain}' AND Transfers.address == '${address}' AND Transfers.from == '${address}' AND Transfers.to == '${address}' AND Transfers.transaction == '${transaction_id}')`)
+
+
+
+    expect(formatSQL(getTransfers(parameters5))).toContain(
+        formatSQL(`WHERE(chain == '${chain}' AND address == '${address}' AND from == '${address}' AND to == '${address}' AND transaction == '${transaction_id}')`)
     );
 
-    expect(formatSQL(getTransfers(parameters))).toContain(
-        formatSQL(`ORDER BY block_number DESC`)
+    expect(formatSQL(getTransfers(parameters5))).toContain(
+        formatSQL(`ORDER BY timestamp DESC`)
     );
 
-    expect(formatSQL(getTransfers(parameters))).toContain(
+    expect(formatSQL(getTransfers(parameters5))).toContain(
         formatSQL(`LIMIT 100`)
     );
 });
@@ -255,19 +300,23 @@ test("getTransfers", () => {
 test("getHolders", () => {
     const parameters = new URLSearchParams({ chain, contract: address });
     expect(formatSQL(getHolders(parameters))).toContain(
-        formatSQL(`SELECT owner`)
+        formatSQL(`SELECT 
+            owner,
+            newBalance AS balance,
+            block_number,
+            toDateTime(timestamp) AS timestamp`)
     );
     expect(formatSQL(getHolders(parameters))).toContain(
-        formatSQL(`FROM balance_changes`)
+        formatSQL(`FROM mv_balance_changes_contract`)
     );
 
 
     expect(formatSQL(getHolders(parameters))).toContain(
-        formatSQL(`WHERE ((owner,block_number)IN(SELECTowner,max(block_number)FROMbalance_changesGROUPBYowner) AND chain == '${chain}' AND contract == '${address}' AND CAST(new_balance as int) > 0)`)
+        formatSQL(`WHERE (chain == '${chain}' AND contract == '${address}' AND CAST(balance as int) > 0)`)
     );
 
     expect(formatSQL(getHolders(parameters))).toContain(
-        formatSQL(`GROUP BY owner`)
+        formatSQL(`ORDER BY timestamp DESC`)
     );
 
     expect(formatSQL(getHolders(parameters))).toContain(
