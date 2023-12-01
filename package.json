@@ -1,6 +1,6 @@
 {
   "description": "ERC20 API powered by Substreams",
-  "version": "v0.0.3",
+  "version": "v0.0.4",
   "name": "substreams-erc20-api",
   "type": "module",
   "license": "MIT",
