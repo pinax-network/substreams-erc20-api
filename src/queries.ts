@@ -36,9 +36,9 @@ function balance_changes_owner_contract_query(table: string) {
     let query = `SELECT
     contract as contract,
     owner as owner,
-    new_balance as balance,
+    newBalance as balance,
     toDateTime(timestamp) as timestamp,
-    transaction_id as transaction_id,
+    transaction as transaction_id,
     chain as chain,
     block_number`;
 
@@ -51,7 +51,7 @@ function balance_changes_owner_query(table: string) {
     owner,
     contract,
     toDateTime(last_value(timestamp)) AS timestamp,
-    last_value(new_balance) AS balance`;
+    last_value(newBalance) AS balance`;
 
     query += ` FROM ${table}`
     return query;
@@ -62,7 +62,7 @@ function balance_changes_contract_query(table: string) {
     owner,
     contract,
     toDateTime(last_value(timestamp)) as timestamp,
-    last_value(new_balance) as balance`;
+    last_value(newBalance) as balance`;
 
     query += ` FROM ${table}`
     return query;
@@ -180,7 +180,7 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
     let query = "";
 
     // SQL Query
-    table = 'balance_changes'
+    table = 'BalanceChange'
     contractTable = 'Contracts';
 
     if (contract && owner) query += balance_changes_owner_contract_query(mvOwnerTable);
@@ -225,30 +225,20 @@ export function getHolders(searchParams: URLSearchParams, example?: boolean) {
     const owner = getAddress(searchParams, "owner", false)?.toLowerCase();
     const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
     // SQL Query
-    const table = 'balance_changes'
+    const table = 'mv_balance_changes_contract'
     let query = `SELECT
     owner,
-        new_balance,
-        block_number
+        newBalance AS balance,
+        block_number,
+        toDateTime(timestamp) AS timestamp
     FROM ${table} `;
     if (!example) {
         // WHERE statements
         const where: any = [];
 
-        //Get holders balance
-        let holderWhereQuery = `(owner, block_number) IN(SELECT owner, max(block_number) FROM ${table}`;
-        const whereHolder: any = [];
-        addTimestampBlockFilter(searchParams, whereHolder);
-        if (whereHolder.length) holderWhereQuery += ` WHERE(${whereHolder.join(' AND ')})`;
-        holderWhereQuery += ` GROUP BY owner)`;
-
-        where.push(holderWhereQuery);
-
-        // equals
-
         if (chain) where.push(`chain == '${chain}'`);
         if (contract) where.push(`contract == '${contract}'`);
-        where.push(`CAST(new_balance as int) > 0`);
+        where.push(`CAST(balance as int) > 0`);
 
         // timestamp and block filter
         addTimestampBlockFilter(searchParams, where);
@@ -256,6 +246,8 @@ export function getHolders(searchParams: URLSearchParams, example?: boolean) {
         // Join WHERE statements with AND
         if (where.length) query += ` WHERE(${where.join(' AND ')})`;
 
+        //add ORDER BY and GROUP BY
+        query += `ORDER BY timestamp DESC`
     }
 
     const limit = parseLimit(searchParams.get("limit"), 100);
