@@ -112,14 +112,12 @@ test("getTotalSupply", () => {
         formatSQL(`SELECT
     TotalSupply.address as address,
         TotalSupply.supply as supply,
-        TotalSupply.id as id,
-        block_number,
-        TotalSupply.module_hash as module_hash,
+        TotalSupply.block_number,
         TotalSupply.chain as chain,
         Contracts.name as name,
         Contracts.symbol as symbol,
         Contracts.decimals as decimals,
-        timestamp`)
+        TotalSupply.timestamp`)
     );
     expect(formatSQL(getTotalSupply(parameters))).toContain(
         formatSQL(`FROM TotalSupply`)
@@ -253,7 +251,7 @@ test("getTransfers", () => {
     const parameters5 = new URLSearchParams({ chain, contract: address, from: address, to: address, transaction_id });
     expect(formatSQL(getTransfers(parameters1))).toContain(
         formatSQL(`SELECT
-        address as contract,
+            address,
             from,
             to,
             value as amount,
