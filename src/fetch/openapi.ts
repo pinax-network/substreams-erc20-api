@@ -27,6 +27,7 @@ const balance_example = (await makeQuery(await getBalanceChanges(new URLSearchPa
 const holders_example = (await makeQuery(await getHolders(new URLSearchParams({ limit: "5" }), true))).data;
 const transfers_example = (await makeQuery(await getTransfers(new URLSearchParams({ limit: "5" }), true))).data;
 
+
 const timestampSchema: SchemaObject = {
   anyOf: [
     { type: "number" },

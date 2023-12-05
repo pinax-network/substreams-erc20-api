@@ -89,14 +89,12 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
     let query = `SELECT
     ${table}.address as address,
         ${table}.supply as supply,
-            ${table}.id as id,
-                block_number,
-                ${table}.module_hash as module_hash,
+                ${table}.block_number,
                     ${table}.chain as chain,
                         ${contractTable}.name as name,
                             ${contractTable}.symbol as symbol,
                                 ${contractTable}.decimals as decimals,
-                                    timestamp
+                                    ${table}.timestamp
     FROM ${table} `;
 
 
@@ -191,7 +189,7 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
     if (contract && owner) query += balance_changes_owner_contract_query(mvOwnerTable);
     else if (!contract && owner) query += balance_changes_owner_query(mvContractTable);
     else if (contract && !owner) query += balance_changes_contract_query(mvContractTable);
-
+    else query += `SELECT * FROM ${table}`
     if (!example) {
         // WHERE statements
         const where = [];
@@ -273,12 +271,13 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
 
 
     // SQL Query
+    let table = "Transfers"
     let mvFromTable = "mv_transfers_from"
     let mvToTable = "mv_transfers_to"
     let mvContractTable = "mv_transfers_contract"
 
     let query = `SELECT
-    address as contract,
+        address,
         from,
         to,
         value as amount,
@@ -291,7 +290,7 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
     else if (!contract && from && !to) query += ` FROM ${mvFromTable}`
     else if (!contract && !from && to) query += ` FROM ${mvToTable}`
     else if (!contract && from && to) query += ` FROM ${mvFromTable}`
-
+    else query += ` FROM ${table}`
 
     if (!example) {
         // WHERE statements
