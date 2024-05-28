@@ -36,11 +36,10 @@ function balance_changes_owner_contract_query(table: string) {
     let query = `SELECT
     contract as contract,
     owner as owner,
-    newBalance as balance,
-    toDateTime(timestamp) as timestamp,
-    transaction as transaction_id,
-    chain as chain,
-    block_number`;
+    new_balance as balance,
+    toDateTime(toUnixTimestamp(timestamp)*1000) as timestamp,
+    transaction_id,
+    block_num as block_number,`;
 
     query += ` FROM ${table}`
     return query;
@@ -50,8 +49,8 @@ function balance_changes_owner_query(table: string) {
     let query = `SELECT
     owner,
     contract,
-    toDateTime(last_value(timestamp)) AS timestamp,
-    last_value(newBalance) AS balance`;
+    toDateTime(toUnixTimestamp(last_value(timestamp))*1000) AS timestamp,
+    last_value(new_balance) AS balance`;
 
     query += ` FROM ${table}`
     return query;
@@ -61,8 +60,8 @@ function balance_changes_contract_query(table: string) {
     let query = `SELECT
     owner,
     contract,
-    toDateTime(last_value(timestamp)) as timestamp,
-    last_value(newBalance) as balance`;
+    toDateTime(toUnixTimestamp(last_value(timestamp))*1000) AS timestamp,
+    last_value(new_balance) as balance`;
 
     query += ` FROM ${table}`
     return query;
@@ -79,7 +78,7 @@ function balance_changes_contract_query(table: string) {
 export function getTotalSupply(searchParams: URLSearchParams, example?: boolean) {
     // Params
     const address = getAddress(searchParams, "address", false)?.toLowerCase();
-    const chain = searchParams.get("chain");
+    // const chain = searchParams.get("chain");
     const symbol = searchParams.get("symbol")?.toLowerCase();
     const name = searchParams.get("name")?.toLowerCase();
 
@@ -90,11 +89,10 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
     ${table}.address as address,
         ${table}.supply as supply,
                 ${table}.block_number,
-                    ${table}.chain as chain,
                         ${contractTable}.name as name,
                             ${contractTable}.symbol as symbol,
                                 ${contractTable}.decimals as decimals,
-                                    ${table}.timestamp
+                                    toUnixTimestamp(${table}.timestamp)*1000 as timestamp
     FROM ${table} `;
 
 
@@ -105,7 +103,6 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
         const where = [];
 
         // equals
-        if (chain) where.push(`${table}.chain == '${chain}'`);
         if (address) where.push(`${table}.address == '${address}'`);
 
         // timestamp and block filter
@@ -134,20 +131,26 @@ export function getTotalSupply(searchParams: URLSearchParams, example?: boolean)
 
 export function getContracts(searchParams: URLSearchParams, example?: boolean) {
     // Params
-    const chain = searchParams.get("chain");
+    //const chain = searchParams.get("chain");
     const address = getAddress(searchParams, "address", false)?.toLowerCase();
     const symbol = searchParams.get("symbol")?.toLowerCase();
     const name = searchParams.get("name")?.toLowerCase();
 
     // Query
     const table = 'Contracts'
-    let query = `SELECT * FROM ${table} `
+    let query = `SELECT  
+    ${table}.address,
+    ${table}.name,
+    ${table}.symbol,
+    ${table}.decimals,
+    ${table}.block_number,
+    toDateTime(toUnixTimestamp(${table}.timestamp) * 1000) as timestamp 
+    FROM ${table} `
 
 
     if (!example) {
         // WHERE statements
         const where = [];
-        if (chain) where.push(`chain == '${chain}'`);
         if (address) where.push(`address == '${address}'`);
         if (symbol) where.push(`LOWER(symbol) == '${symbol}'`);
         if (name) where.push(`LOWER(name) == '${name}'`);
@@ -171,32 +174,40 @@ export function getContracts(searchParams: URLSearchParams, example?: boolean) {
 }
 
 export function getBalanceChanges(searchParams: URLSearchParams, example?: boolean) {
-    const chain = searchParams.get("chain");
+    //const chain = searchParams.get("chain");
     const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
     const owner = getAddress(searchParams, "owner", false)?.toLowerCase();
 
 
     let table;
-    let contractTable;
     let mvOwnerTable = "mv_balance_changes_owner"
     let mvContractTable = "mv_balance_changes_contract"
     let query = "";
 
     // SQL Query
-    table = 'BalanceChange'
+    table = 'balance_changes'
 
 
     if (contract && owner) query += balance_changes_owner_contract_query(mvOwnerTable);
     else if (!contract && owner) query += balance_changes_owner_query(mvContractTable);
     else if (contract && !owner) query += balance_changes_contract_query(mvContractTable);
-    else query += `SELECT * FROM ${table}`
+    else query += `SELECT 
+    block_num as block_number,
+    toDateTime(toUnixTimestamp(timestamp)*1000) as timestamp,
+    contract,
+    owner,
+    amount,
+    old_balance,
+    new_balance,
+    transaction_id,
+    change_type 
+
+    FROM ${table}`
     if (!example) {
         // WHERE statements
         const where = [];
 
         // equals
-
-        if (chain) where.push(`chain == '${chain}'`);
         if (owner) where.push(`owner == '${owner}'`);
         if (contract) where.push(`contract == '${contract}'`);
 
@@ -223,7 +234,7 @@ export function getBalanceChanges(searchParams: URLSearchParams, example?: boole
 
 
 export function getHolders(searchParams: URLSearchParams, example?: boolean) {
-    const chain = searchParams.get("chain");
+    // const chain = searchParams.get("chain");
     const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
     const owner = getAddress(searchParams, "owner", false)?.toLowerCase();
     const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
@@ -231,15 +242,13 @@ export function getHolders(searchParams: URLSearchParams, example?: boolean) {
     const table = 'mv_balance_changes_contract'
     let query = `SELECT
     owner,
-        newBalance AS balance,
-        block_number,
-        toDateTime(timestamp) AS timestamp
+        new_balance AS balance,
+        block_num as block_number,
+        toDateTime(toUnixTimestamp(timestamp)*1000) AS timestamp
     FROM ${table} `;
     if (!example) {
         // WHERE statements
         const where: any = [];
-
-        if (chain) where.push(`chain == '${chain}'`);
         if (contract) where.push(`contract == '${contract}'`);
         where.push(`CAST(balance as int) > 0`);
 
@@ -265,7 +274,7 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
     const contract = getAddress(searchParams, "contract", false)?.toLowerCase();
     const from = getAddress(searchParams, "from", false)?.toLowerCase();
     const to = getAddress(searchParams, "to", false)?.toLowerCase();
-    const chain = searchParams.get("chain");
+    //  const chain = searchParams.get("chain");
     const transaction_id = searchParams.get("transaction_id")?.toLowerCase();
     const amount = searchParams.get("amount");
 
@@ -283,8 +292,7 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
         value as amount,
         transaction as transaction_id,
         block_number,
-        timestamp,
-        chain`
+        toDateTime(toUnixTimestamp(timestamp)*1000) as timestamp`
 
     if (contract) query += ` FROM ${mvContractTable}`
     else if (!contract && from && !to) query += ` FROM ${mvFromTable}`
@@ -297,7 +305,6 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
         const where = [];
 
         // equals
-        if (chain) where.push(`chain == '${chain}'`);
         if (contract) where.push(`address == '${contract}'`);
         if (from) where.push(`from == '${from}'`);
         if (to) where.push(`to == '${to}'`);
@@ -323,5 +330,5 @@ export function getTransfers(searchParams: URLSearchParams, example?: boolean) {
 }
 
 export function getChain() {
-    return `SELECT DISTINCT chain FROM module_hashes`;
+    return `ETH`;
 }

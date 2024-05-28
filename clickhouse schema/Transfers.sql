@@ -1,19 +1,18 @@
 CREATE TABLE IF NOT EXISTS Transfers  (
+    "id" String,
     address FixedString(40),
     `from` String,
     `to` String,
     value String,
     transaction String,
-    chain           LowCardinality(String),
     block_number    UInt32(),
     timestamp       DateTime64(3, 'UTC'),
 )
-ENGINE = MergeTree()
-ORDER BY (timestamp, block_number, chain);
+ENGINE = MergeTree PRIMARY KEY ("id")
+ORDER BY (id,timestamp, block_number);
 
--- Indexes for block_number and chain --
+-- Indexes for block_number
 ALTER TABLE Transfers ADD INDEX transfers_block_number_index block_number TYPE minmax;
-ALTER TABLE Transfers ADD INDEX transfers_chain_index chain TYPE minmax;
 
 -- MV for contract --
 CREATE MATERIALIZED VIEW mv_transfers_contract

@@ -6,10 +6,10 @@ import pkg from "../package.json";
 
 export const DEFAULT_PORT = "8080";
 export const DEFAULT_HOSTNAME = "localhost";
-export const DEFAULT_HOST = "http://localhost:8123";
-export const DEFAULT_DATABASE = "default";
-export const DEFAULT_USERNAME = "default";
-export const DEFAULT_PASSWORD = "";
+export const DEFAULT_HOST = "http://ch-node44b.mar.eosn.io:8123";
+export const DEFAULT_DATABASE = "eth_erc20_token_test";
+export const DEFAULT_USERNAME = "testing";
+export const DEFAULT_PASSWORD = "secret";
 export const DEFAULT_MAX_LIMIT = 10000;
 export const DEFAULT_VERBOSE = false;
 export const DEFAULT_SORT_BY = "DESC";

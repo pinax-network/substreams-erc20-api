@@ -5,9 +5,14 @@ import * as prometheus from "../prometheus.js";
 import { getChain } from "../queries.js";
 import { toJSON } from "./utils.js";
 
-export async function supportedChainsQuery() {
+/*export async function supportedChainsQuery() {
   const response = await makeQuery<{ chain: string }>(getChain());
   return response.data.map((r) => r.chain);
+}*/
+
+export async function supportedChainsQuery() {
+  //const response = await makeQuery<{ chain: string }>(getChain());
+  return ["ETH"];
 }
 
 export default async function (req: Request) {
